@@ -26,7 +26,7 @@ const cspDirectives = [
   "img-src 'self' data: blob: https://images.unsplash.com",
   "font-src 'self'",
   `connect-src ${connectSrc}`,
-  "frame-src calendly.com *.calendly.com",
+  "frame-src calendly.com *.calendly.com www.openstreetmap.org",
   "form-action 'self'",
   "base-uri 'self'",
   "frame-ancestors 'none'",

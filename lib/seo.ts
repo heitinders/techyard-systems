@@ -109,6 +109,70 @@ export function buildBlogPostingJsonLd(
   }
 }
 
+export type LocalBusinessLd = {
+  '@context': 'https://schema.org'
+  '@type': 'ProfessionalService'
+  name: string
+  url: string
+  image: string
+  telephone: string
+  email: string
+  address: {
+    '@type': 'PostalAddress'
+    streetAddress: string
+    addressLocality: string
+    addressRegion: string
+    postalCode: string
+    addressCountry: string
+  }
+  geo: {
+    '@type': 'GeoCoordinates'
+    latitude: number
+    longitude: number
+  }
+  openingHoursSpecification: Array<{
+    '@type': 'OpeningHoursSpecification'
+    dayOfWeek: string[]
+    opens: string
+    closes: string
+  }>
+  areaServed: string
+}
+
+export function buildLocalBusinessJsonLd(siteUrl: string): LocalBusinessLd {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name: ORG_NAME,
+    url: siteUrl,
+    image: `${siteUrl}/logos/SVG/Light%20BG.svg`,
+    telephone: '+1-661-488-0808',
+    email: 'contactus@techyardsystems.com',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '28470 Avenue Stanford #345',
+      addressLocality: 'Valencia',
+      addressRegion: 'CA',
+      postalCode: '91355',
+      addressCountry: 'US',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: 34.4175,
+      longitude: -118.5685,
+    },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '09:00',
+        closes: '18:00',
+      },
+    ],
+    areaServed: 'Global',
+  }
+}
+
 export type FaqEntry = { question: string; answer: string }
 export type FaqPageLd = {
   '@context': 'https://schema.org'

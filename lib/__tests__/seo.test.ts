@@ -4,6 +4,7 @@ import {
   buildArticleJsonLd,
   buildBlogPostingJsonLd,
   buildFaqPageJsonLd,
+  buildLocalBusinessJsonLd,
 } from '../seo'
 
 const SITE = 'https://techyardsystems.com'
@@ -48,6 +49,18 @@ describe('buildBlogPostingJsonLd (journal)', () => {
     expect(ld.author['@type']).toBe('Person')
     expect(ld.author.name).toBe('Kirat Singh')
     expect(ld.url).toBe(`${SITE}/journal/measuring-outcomes`)
+  })
+})
+
+describe('buildLocalBusinessJsonLd', () => {
+  it('returns ProfessionalService with address, phone, and hours', () => {
+    const ld = buildLocalBusinessJsonLd(SITE)
+    expect(ld['@type']).toBe('ProfessionalService')
+    expect(ld.telephone).toBe('+1-661-488-0808')
+    expect(ld.address.postalCode).toBe('91355')
+    expect(ld.address.addressRegion).toBe('CA')
+    expect(ld.geo.latitude).toBeCloseTo(34.4175, 4)
+    expect(ld.openingHoursSpecification[0]?.opens).toBe('09:00')
   })
 })
 
