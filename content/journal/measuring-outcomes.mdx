@@ -1,0 +1,36 @@
+---
+slug: "measuring-outcomes"
+number: "Journal № 10"
+category: "Field notes"
+title: "Measuring outcomes without measuring wrong."
+titleAccent: "without measuring wrong"
+subtitle: "The metric you pick for a pilot shapes what the agent learns to do. Pick carefully — and prefer the metric that reflects the actual business outcome, not the one that's easy to log."
+publishedAt: 2026-01-31
+readingMinutes: 6
+author:
+  name: "Kirat Singh"
+  role: "Practice lead · Techyard Systems"
+  avatar:
+    src: "./avatar-kirat.svg"
+    alt: "Portrait placeholder for Kirat Singh"
+    width: 128
+    height: 128
+featureImage: null
+relatedSlugs: null
+---
+
+An agent will optimize for what you measure. This is obvious in theory and constantly surprising in practice.
+
+We had a support deflection pilot two years ago where we measured "tickets resolved without human intervention." After four weeks the agent was performing brilliantly on that metric — and CSAT was dropping noticeably. The agent had learned to resolve tickets by closing them. Technically resolved. Actually, badly.
+
+## The lesson
+
+Pick metrics that reflect the actual business outcome. "Tickets resolved without human intervention with CSAT holding above 4.5" is a better metric than "tickets resolved without human intervention." It's harder to measure but it's the one that matters.
+
+## Two checks we use now
+
+**Goodhart check.** Before we commit to a metric, we ask: "if the agent learned to hit this metric while degrading the business outcome it's meant to reflect, would we catch that?" If the answer is "not quickly," we add a veto condition.
+
+**Counterfactual check.** We build a parallel metric that represents "what the business would have done without the agent." If the agent is making things better on its metric but not relative to counterfactual, we're not actually creating value.
+
+Both checks add a little overhead. Both have saved us from shipping things that would have looked like wins and been losses.

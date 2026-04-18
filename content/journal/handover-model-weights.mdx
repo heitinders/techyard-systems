@@ -1,0 +1,40 @@
+---
+slug: "handover-model-weights"
+number: "Journal № 11"
+category: "Notes"
+title: "Why we hand over model weights."
+titleAccent: "hand over"
+subtitle: "Every engagement ends with the client owning the code AND the model weights. Here's why that matters and how we structure it."
+publishedAt: 2026-02-19
+readingMinutes: 4
+author:
+  name: "Kirat Singh"
+  role: "Practice lead · Techyard Systems"
+  avatar:
+    src: "./avatar-kirat.svg"
+    alt: "Portrait placeholder for Kirat Singh"
+    width: 128
+    height: 128
+featureImage: null
+relatedSlugs: null
+---
+
+A question we get in almost every initial scoping call: "do we own the model?" The answer is yes — both the code we write and the fine-tuned weights, both go to the client at engagement end.
+
+## Why this matters
+
+Vendor lock-in is the default in enterprise AI. The vendor owns the fine-tuning, the vendor owns the inference infrastructure, the vendor raises prices when the customer can't leave. We don't do that.
+
+## How we structure it
+
+All code lives in the client's repo from day one. We contribute via pull request. No separate "Techyard" repo with code that then gets transferred.
+
+Fine-tuned model weights live in the client's object storage. We produce them, we hand them the keys, they retain them after the engagement.
+
+Retraining infrastructure — the pipeline that produces new weights when the workflow changes — lives in the client's cloud and is documented. They can rerun it without us.
+
+## What this costs us
+
+A small amount of reference power. We can't point to "the model" in future sales conversations because it's not ours to point to. We can point to the engagement, the measurable outcome, the structure of the solution.
+
+We think that's a better anchor anyway. The model is a detail; the work is the thing.

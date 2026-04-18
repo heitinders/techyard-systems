@@ -1,0 +1,51 @@
+---
+slug: "healthcare-intake"
+number: "№ 02"
+clientName: "Regional Health Network (disclosed on request)"
+clientDisclosed: false
+industry: "healthcare"
+practice: "it-hr"
+engagementWeeks: 12
+engagementType: "fixed fee"
+publishedAt: 2026-01-28
+title: "Patient intake, without the clipboard."
+titleAccent: "without the clipboard"
+lede: "A regional health network replaced a paper-and-phone intake process with an HIPAA-ready agent that qualifies new patients, books appointments, and hands clean records to front-office staff."
+pullQuote: "Front-office is now a review job, not a data-entry job."
+pullAttribution: "— Director of Operations, Regional Health Network"
+outcomes:
+  - eyebrow: "Outcome 01"
+    value: "74"
+    valueAccent: "%"
+    note: "Reduction in time-to-first-appointment for new patients, measured from first contact through confirmed booking."
+  - eyebrow: "Outcome 02"
+    value: "3.2"
+    valueAccent: "×"
+    note: "More intake completions per front-office FTE, without any reduction in record quality or compliance posture."
+  - eyebrow: "Outcome 03"
+    value: "0"
+    valueAccent: ""
+    note: "HIPAA audit findings during or after deployment. Agent ran entirely in the client's existing HIPAA-compliant cloud."
+featured: false
+nextSlug: null
+---
+
+## The problem
+
+New-patient intake was the network's most painful non-clinical workflow. Front-office staff spent ~40 minutes per new patient: phone tag, paper forms, insurance verification by fax, chart creation by hand.
+
+## How we scoped it
+
+Two weeks shadowing intake. We mapped the actual steps (vs. the documented ones — they'd drifted apart) and identified the four decision points that required a human versus the eighteen that didn't.
+
+## What we built
+
+A conversational intake agent reachable by web, SMS, or phone. It qualifies the patient, verifies insurance eligibility against the network's payer APIs, books into the scheduling system, and produces a ready-to-review chart for front-office approval.
+
+## Compliance
+
+The entire agent runs in the client's HIPAA-compliant AWS account. No patient data leaves that boundary. Model weights are hosted alongside — no external LLM call. Our engagement passed the client's security review and a third-party HIPAA audit during the measurement window.
+
+## What the team owns now
+
+The agent, the infrastructure, the retraining pipeline, and the audit logs. Ongoing support is optional — the client's internal engineering team took over at month 4.
