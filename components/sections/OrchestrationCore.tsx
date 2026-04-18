@@ -21,7 +21,7 @@ const NODES: Node[] = [
 ]
 
 const RADIUS = 175
-const CORE = 150
+const CORE = 180 // core puck must be wide enough for "orchestration" at 20px italic serif
 const SIZE = RADIUS * 2 + CORE // total SVG/container square size
 
 // Round to 3 decimal places to eliminate sub-ULP float drift between
@@ -56,7 +56,7 @@ export function OrchestrationCore() {
   return (
     <div
       aria-label="Integration orchestration core, live view"
-      className="relative mx-auto aspect-square w-full max-w-[500px]"
+      className="relative mx-auto aspect-square w-full max-w-[530px]"
     >
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -134,7 +134,7 @@ export function OrchestrationCore() {
 
       {/* Core puck */}
       <div
-        className="absolute left-1/2 top-1/2 z-[2] flex h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-ink text-paper"
+        className="absolute left-1/2 top-1/2 z-[2] flex h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-ink px-5 text-center text-paper"
         style={{
           boxShadow:
             '0 16px 40px -16px rgba(26,29,24,0.35), 0 0 0 6px color-mix(in oklab, var(--color-paper) 60%, transparent)',
@@ -143,14 +143,14 @@ export function OrchestrationCore() {
         <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-paper/55">
           Techyard AI
         </div>
-        <div className="mt-1.5 font-serif text-[22px] italic leading-none tracking-[-0.02em]">
+        <div className="mt-2 font-serif text-[20px] italic leading-none tracking-[-0.025em]">
           orchestration
         </div>
-        <div className="mt-0.5 font-serif text-[22px] italic leading-none tracking-[-0.02em]">
+        <div className="mt-1 font-serif text-[20px] italic leading-none tracking-[-0.025em]">
           core
         </div>
-        <div className="mt-2.5 h-px w-7 bg-paper/35" />
-        <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[#a8c0b4]">
+        <div className="mt-3 h-px w-7 bg-paper/35" />
+        <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#a8c0b4]">
           <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-[#a8c0b4]" />
           online · {NODES.length} systems
         </div>
