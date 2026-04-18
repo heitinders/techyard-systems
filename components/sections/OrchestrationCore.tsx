@@ -132,25 +132,39 @@ export function OrchestrationCore() {
         })}
       </svg>
 
-      {/* Core puck */}
+      {/* Core puck — sized as a % of the container so it scales with
+           the SVG orbit on mobile. 34% ≈ 180/530 (the desktop proportion). */}
       <div
-        className="absolute left-1/2 top-1/2 z-[2] flex h-[180px] w-[180px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-ink px-5 text-center text-paper"
+        className="absolute left-1/2 top-1/2 z-[2] flex aspect-square w-[34%] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-ink text-center text-paper"
         style={{
           boxShadow:
             '0 16px 40px -16px rgba(26,29,24,0.35), 0 0 0 6px color-mix(in oklab, var(--color-paper) 60%, transparent)',
+          padding: '0 clamp(10px, 3%, 20px)',
         }}
       >
-        <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-paper/55">
+        <div
+          className="font-mono uppercase tracking-[0.22em] text-paper/55"
+          style={{ fontSize: 'clamp(7px, 1.8vw, 9px)' }}
+        >
           Techyard AI
         </div>
-        <div className="mt-2 font-serif text-[20px] italic leading-none tracking-[-0.025em]">
+        <div
+          className="mt-[6%] font-serif italic leading-none tracking-[-0.025em]"
+          style={{ fontSize: 'clamp(13px, 3.9vw, 20px)' }}
+        >
           orchestration
         </div>
-        <div className="mt-1 font-serif text-[20px] italic leading-none tracking-[-0.025em]">
+        <div
+          className="mt-[3%] font-serif italic leading-none tracking-[-0.025em]"
+          style={{ fontSize: 'clamp(13px, 3.9vw, 20px)' }}
+        >
           core
         </div>
-        <div className="mt-3 h-px w-7 bg-paper/35" />
-        <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#a8c0b4]">
+        <div className="mt-[9%] h-px w-7 bg-paper/35" />
+        <div
+          className="mt-[6%] flex items-center gap-1.5 font-mono uppercase tracking-[0.12em] text-[#a8c0b4]"
+          style={{ fontSize: 'clamp(7px, 1.7vw, 9px)' }}
+        >
           <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-[#a8c0b4]" />
           online · {NODES.length} systems
         </div>
@@ -164,18 +178,20 @@ export function OrchestrationCore() {
         return (
           <div
             key={n.id}
-            className={`absolute z-${isActive ? '[3]' : '[1]'} -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border bg-paper-raised px-3 py-1.5 pl-1.5 transition-[box-shadow,border-color,transform] duration-[var(--dur-fast)] ${
+            className={`absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border bg-paper-raised py-1 pl-1 pr-2 transition-[box-shadow,border-color,transform] duration-[var(--dur-fast)] sm:py-1.5 sm:pr-3 ${
               isActive
-                ? 'border-accent shadow-[0_10px_28px_-10px_rgba(74,97,82,0.5),0_0_0_4px_color-mix(in_oklab,var(--color-accent)_12%,transparent)]'
-                : 'border-rule shadow-[0_6px_14px_-10px_rgba(26,29,24,0.2)]'
+                ? 'z-[3] border-accent shadow-[0_10px_28px_-10px_rgba(74,97,82,0.5),0_0_0_4px_color-mix(in_oklab,var(--color-accent)_12%,transparent)]'
+                : 'z-[1] border-rule shadow-[0_6px_14px_-10px_rgba(26,29,24,0.2)]'
             }`}
             style={{ left: `${left}%`, top: `${top}%` }}
           >
-            <span className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-rule bg-paper">
-                <IntegrationIcon kind={n.id} />
+            <span className="flex items-center gap-1.5 sm:gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-rule bg-paper sm:h-7 sm:w-7">
+                <IntegrationIcon kind={n.id} size={16} />
               </span>
-              <span className="pr-1 font-sans text-[12px] font-medium text-ink">{n.label}</span>
+              <span className="pr-0.5 font-sans text-[10px] font-medium text-ink sm:text-[12px]">
+                {n.label}
+              </span>
             </span>
           </div>
         )
