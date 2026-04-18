@@ -2,7 +2,7 @@
 # Techyard Systems — Website Redesign Design Spec
 
 **Date:** 2026-04-18
-**Status:** Draft v2 — applied stakeholder review revisions (11 fixes + 4 opinionated calls resolved)
+**Status:** Draft v2.1 — stakeholder review applied + three stray-reference follow-ups fixed per re-review
 **Project directory:** `/Users/heitindersingh/techyardsystems-redesign/`
 **Current site under replacement:** <https://techyardsystems.com>
 **Author:** Heitinder Singh (client-engaged redesign)
@@ -12,6 +12,7 @@
 - **v1 (2026-04-18 13:45)** — initial spec after brainstorming. Reviewed by spec-document-reviewer subagent: Approved with 8 advisories.
 - **v1.1 (2026-04-18 14:10)** — applied reviewer advisories: corrected radius count, documented ghost button + chip states, resolved server-action vs route-handler ambiguity, corrected JSON-LD types (no `CaseStudy` type), explicit outcomes-tuple rule, drop-cap a11y note, V1 build vs V1 launch sequencing.
 - **v2 (2026-04-18 15:00)** — applied stakeholder review: dropped ISR (vestigial with MDX-in-repo); fixed DNS TTL timing (48h pre-cut, not same-day); completed env var list; removed orphan `api/contact/route.ts`; added font loading strategy; added security headers + `SECURITY.md` + `/.well-known/security.txt`; Calendly lazy-load-on-click (fixes cookie-banner contradiction); image strategy and `<Figure>` component; contact form delivery-failure UX branch; preview-deploy noindex + password protection; CI-enforced brand-name lint; OG-route Playwright test; outcomes rule relaxed to `3 or 1` discriminated union; journal cadence gate in pre-launch checklist; webhook/server-action limitation flagged in §12; 404 + error page designs; sitemap `priority`/`changefreq` for Bing; chip ARIA pattern; cross-browser drop-cap visual regression.
+- **v2.1 (2026-04-18 15:30)** — fixed three stray ISR/route references that survived v2 revision per spec-reviewer: §1.5 success criterion (removed "beyond ISR"), §2 scope API-routes block (rewritten to name server action), §7.3 data-flow step 5 (ISR reference replaced with explicit "no ISR in V1" guidance). Added OG-route `/journal/*` prefix test per reviewer advisory.
 
 ---
 
@@ -33,7 +34,7 @@ The current site is generic B2B SaaS in appearance: blue gradients, icon grids, 
 2. **Credibility signal surface** — case studies and the practice-based services layout should be the strongest signals on the site, not logos or metric-banner-cards.
 3. **Lighthouse baselines in production:** Performance ≥ 95, Accessibility = 100, Best Practices ≥ 95, SEO = 100. CLS < 0.05, LCP < 2.0s on 3G-like conditions.
 4. **WCAG 2.2 AA conformance** — verified via axe + manual VoiceOver walkthrough before launch.
-5. **Zero-friction content updates** — adding a case study or journal post requires only committing one MDX file; no schema migration, no rebuild required beyond ISR.
+5. **Zero-friction content updates** — adding a case study or journal post requires only committing one MDX file; no schema migration, no manual rebuild. A content commit triggers a Vercel deploy with a full rebuild (~90 seconds cold). See §3 rendering strategy for why ISR is explicitly not used in V1.
 
 ### Brand naming (hard rule, CI-enforced)
 
@@ -62,9 +63,9 @@ The brand is **Techyard Systems**, never "Techyard" alone. Every production surf
 - `/journal` — Journal index
 - `/journal/[slug]` — Journal post (MDX-driven)
 
-**API routes:**
-- `POST /api/contact` — validates + sends via Resend
-- `GET /api/og/[...slug]` — dynamic OpenGraph image generation
+**Server actions + API routes:**
+- `app/contact/actions.ts` — `submitContactForm` server action (zod-validates, sends via Resend). See §7.3 for why V1 uses a server action instead of a route handler.
+- `GET /api/og/[...slug]` — dynamic OpenGraph image generation (edge runtime)
 
 **SEO/GEO assets:**
 - `/sitemap.xml`
@@ -599,10 +600,12 @@ Explicitly *not* included: `shadcn/ui` (aesthetic mismatch), `date-fns` or `dayj
 
 **Content → pages.**
 1. Author commits an MDX file to `content/`.
-2. `pnpm build` runs velite; velite validates frontmatter with zod, compiles MDX body, writes `.velite/index.ts`.
-3. Pages import `allCaseStudies` / `allJournalPosts` at module level.
-4. `generateStaticParams()` emits every `[slug]` at build.
-5. ISR `revalidate: 3600` lets pushes hit production in ~2 minutes.
+2. Commit triggers a Vercel deploy.
+3. During build: velite validates frontmatter with zod, compiles MDX body, writes `.velite/index.ts`.
+4. Pages import `allCaseStudies` / `allJournalPosts` at module level.
+5. `generateStaticParams()` emits every `[slug]` at build — every content page is fully static.
+6. Deploy promotes to production. Typical end-to-end time: content-commit → live ≈ 90 seconds.
+7. **No ISR in V1** (see §3). The deploy IS the revalidation mechanism; there is no second path by which content changes. Do not add `export const revalidate = N` to any route.
 
 **Contact form flow.**
 
@@ -779,7 +782,8 @@ Target: **WCAG 2.2 AA**, verified not assumed.
   10. Keyboard-only: full nav path reaches every link + form field + submit; chips toggle with Space/Enter
   11. `sitemap.xml` responds with 200 and valid XML
   12. `/api/og/work/<first-slug>` responds with 200, `Content-Type: image/png`, and non-empty body
-  13. Calendly card renders as static button; click loads iframe (catches lazy-load regression)
+  13. `/api/og/journal/<first-slug>` responds with 200 + PNG (confirms the catch-all route handles both prefixes — a single fixture can miss a prefix-handling regression)
+  14. Calendly card renders as static button; click loads iframe (catches lazy-load regression)
 
 ### 10.4 Visual regression
 
