@@ -19,8 +19,19 @@ export function Nav() {
         aria-label="Primary"
         className="mx-auto flex h-16 max-w-[1180px] items-center justify-between px-6 md:px-10 lg:px-14"
       >
-        <Link href="/" className="font-serif text-[22px] font-medium tracking-tight">
-          Techyard Systems
+        <Link
+          href="/"
+          aria-label="Techyard Systems — home"
+          className="flex items-center"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logos/SVG/Light%20BG.svg"
+            alt="Techyard Systems"
+            width={83}
+            height={32}
+            className="h-8 w-auto"
+          />
         </Link>
         <ul className="hidden gap-9 md:flex">
           {links.map((link) => (

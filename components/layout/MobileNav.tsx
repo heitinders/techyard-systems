@@ -19,7 +19,19 @@ export function MobileNav({ links }: Props) {
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-ink/40" />
         <Dialog.Content className="fixed inset-0 z-[70] flex flex-col bg-paper p-6">
           <div className="flex items-center justify-between">
-            <Dialog.Title className="font-serif text-[22px] font-medium">Techyard Systems</Dialog.Title>
+            <Dialog.Title asChild>
+              <span className="flex items-center">
+                <span className="sr-only">Techyard Systems</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logos/SVG/Light%20BG.svg"
+                  alt=""
+                  width={83}
+                  height={32}
+                  className="h-8 w-auto"
+                />
+              </span>
+            </Dialog.Title>
             <Dialog.Close asChild>
               <button aria-label="Close menu" className="rounded-pill border border-ink px-3 py-2 text-sm">
                 Close

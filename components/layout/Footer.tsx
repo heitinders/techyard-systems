@@ -19,8 +19,15 @@ export function Footer() {
     <footer className="bg-ink-deep px-6 py-20 text-paper md:px-10 lg:px-14">
       <div className="mx-auto grid max-w-[1180px] gap-12 md:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
-          <div className="font-serif text-2xl font-medium">Techyard Systems</div>
-          <p className="mt-4 max-w-[32ch] font-serif text-base italic text-paper/60">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logos/SVG/Dark%20BG.svg"
+            alt="Techyard Systems"
+            width={104}
+            height={40}
+            className="h-10 w-auto"
+          />
+          <p className="mt-5 max-w-[32ch] font-serif text-base italic text-paper/60">
             An autonomous-systems practice. We build AI agents that run the work you'd rather
             not hire for.
           </p>
