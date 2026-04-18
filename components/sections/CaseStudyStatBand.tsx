@@ -11,7 +11,7 @@ export function CaseStudyStatBand({ outcomes }: { outcomes: Outcomes }) {
       <section className="relative overflow-hidden bg-ink-deep py-[var(--space-section)] text-paper">
         <CornerMarks color="rgba(241,237,228,0.28)" />
         <Container>
-          <div className="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#a8c0b4]">
+          <div className="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-accent-paper">
             {o.eyebrow}
           </div>
           <div className="flex flex-wrap items-baseline gap-2 font-serif font-medium leading-[0.85] tracking-[-0.035em]">
@@ -23,7 +23,7 @@ export function CaseStudyStatBand({ outcomes }: { outcomes: Outcomes }) {
             </span>
             <span
               style={{ fontSize: 'clamp(72px, 13vw, 180px)' }}
-              className="font-normal italic text-[#a8c0b4]"
+              className="font-normal italic text-accent-paper"
             >
               {o.valueAccent}
             </span>
@@ -46,12 +46,12 @@ export function CaseStudyStatBand({ outcomes }: { outcomes: Outcomes }) {
               key={i}
               className="border-t border-paper/15 pt-8 md:border-l md:border-t-0 md:pl-8 md:pt-0 md:first:border-l-0 md:first:pl-0"
             >
-              <div className="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#a8c0b4]">
+              <div className="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-accent-paper">
                 {o.eyebrow}
               </div>
               <div className="font-serif text-[clamp(64px,9vw,108px)] font-medium leading-[0.88] tracking-[-0.03em]">
                 {o.value}
-                <span className="font-normal italic text-[#a8c0b4]">{o.valueAccent}</span>
+                <span className="font-normal italic text-accent-paper">{o.valueAccent}</span>
               </div>
               <p className="mt-6 max-w-[32ch] font-serif text-[16px] leading-[1.5] text-paper/70">
                 {o.note}

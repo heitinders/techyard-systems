@@ -12,8 +12,8 @@ type Props = {
 // small caps eyebrow text. Used as the opening signal on every major section.
 export function EyebrowLine({ children, num, width = 40, tone = 'accent', className }: Props) {
   const numColor = tone === 'paper' ? 'text-paper/55' : 'text-ink-subtle'
-  const ruleColor = tone === 'paper' ? 'bg-[#a8c0b4]' : 'bg-accent'
-  const textColor = tone === 'paper' ? 'text-[#a8c0b4]' : 'text-accent'
+  const ruleColor = tone === 'paper' ? 'bg-accent-paper' : 'bg-accent'
+  const textColor = tone === 'paper' ? 'text-accent-paper' : 'text-accent'
   return (
     <div className={`inline-flex items-center gap-3.5 ${className ?? ''}`}>
       {num ? (

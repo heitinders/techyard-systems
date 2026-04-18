@@ -45,7 +45,7 @@ export function FeaturedCaseStudy() {
             </div>
             <Link
               href={cs.url}
-              className="mt-10 inline-block border-b border-paper pb-1 text-sm font-medium transition-colors hover:border-[#a8c0b4] hover:text-[#a8c0b4]"
+              className="mt-10 inline-block border-b border-paper pb-1 text-sm font-medium transition-colors hover:border-accent-paper hover:text-accent-paper"
             >
               Read the full study →
             </Link>
@@ -57,7 +57,7 @@ export function FeaturedCaseStudy() {
             </div>
             <div className="flex items-baseline gap-1 font-serif font-medium leading-[0.88] tracking-[-0.03em]">
               <span className="text-[clamp(78px,11vw,140px)]">{headline.value}</span>
-              <span className="text-[clamp(54px,7.7vw,98px)] font-normal italic text-[#a8c0b4]">
+              <span className="text-[clamp(54px,7.7vw,98px)] font-normal italic text-accent-paper">
                 {headline.valueAccent}
               </span>
             </div>

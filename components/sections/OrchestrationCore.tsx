@@ -162,10 +162,10 @@ export function OrchestrationCore() {
         </div>
         <div className="mt-[9%] h-px w-7 bg-paper/35" />
         <div
-          className="mt-[6%] flex items-center gap-1.5 font-mono uppercase tracking-[0.12em] text-[#a8c0b4]"
+          className="mt-[6%] flex items-center gap-1.5 font-mono uppercase tracking-[0.12em] text-accent-paper"
           style={{ fontSize: 'clamp(7px, 1.7vw, 9px)' }}
         >
-          <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-[#a8c0b4]" />
+          <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-accent-paper" />
           online · {NODES.length} systems
         </div>
       </div>

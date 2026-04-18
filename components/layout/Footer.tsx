@@ -34,7 +34,7 @@ export function Footer() {
           <div className="mt-7 flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/45">
             <span
               aria-hidden="true"
-              className="tys-status-dot inline-block h-[7px] w-[7px] rounded-full bg-[#7aa58c]"
+              className="tys-status-dot inline-block h-[7px] w-[7px] rounded-full bg-accent-live"
             />
             All systems · operational
           </div>

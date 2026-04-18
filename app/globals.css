@@ -8,6 +8,8 @@
   --color-ink-muted: var(--color-ink-muted);
   --color-ink-subtle: var(--color-ink-subtle);
   --color-accent: var(--color-accent);
+  --color-accent-paper: var(--color-accent-paper);
+  --color-accent-live: var(--color-accent-live);
   --color-rule: var(--color-rule);
   --color-ink-deep: var(--color-ink-deep);
 
