@@ -1,0 +1,38 @@
+# Techyard Systems
+
+> Techyard Systems is an autonomous-systems practice that designs, builds, and hands off custom AI agents for support, sales, and operations. We work in fixed-fee pilots and short engagements, and the work the agent owns gets handed back to the client with no vendor lock-in.
+
+## What we do
+
+- **Support automation** — tier-1 deflection with CSAT veto conditions, not raw ticket-close rates
+- **Sales agents** — inbound qualification, outbound prospecting, follow-up sequences
+- **IT & HR request routing** — access requests, onboarding workflows, policy Q&A
+- **Data analysis & reporting** — scheduled digests, anomaly surfacing, monitoring agents
+- **Operations monitoring** — continuous signal-map evaluation against business systems (TMS, billing, logistics)
+
+## How we work
+
+1. Two-week scoped discovery — we learn the system, measure a baseline, agree on the metric that matters
+2. Fixed-fee build, typically 8–10 weeks
+3. Handover — client owns the agent, the infrastructure, and the model weights
+4. Optional retainer for maintenance and training updates
+
+## Key pages
+
+- [Services](https://techyardsystems.com/services) — the five practice areas, each with typical timeline and measurable-by outcome
+- [Work](https://techyardsystems.com/work) — case studies with real outcomes (freight monitoring, support deflection, healthcare intake)
+- [Journal](https://techyardsystems.com/journal) — field notes from shipping agents into production
+- [Security](https://techyardsystems.com/security) — SOC 2 Type II, GDPR, HIPAA, ISO 27001; plainly-answered FAQs
+- [Contact](https://techyardsystems.com/contact) — 15-minute scoping call or a paragraph of context
+
+## Contact
+
+- Email: contactus@techyardsystems.com
+- Security disclosures: security@techyardsystems.com
+- Based in Canada, working worldwide
+
+## What we don't do
+
+- Training on client data by default (never, unless the engagement explicitly asks for it)
+- Vendor lock-in (no proprietary APIs gating the agent you just paid us to build)
+- LLM wrappers badged as agents (if it's a chatbot, we'll tell you it's a chatbot)
