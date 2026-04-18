@@ -30,6 +30,7 @@ export function Nav() {
             alt="Techyard Systems"
             width={83}
             height={32}
+            fetchPriority="high"
             className="h-8 w-auto"
           />
         </Link>

@@ -95,7 +95,7 @@ export function ContactForm() {
       <input type="hidden" name="_t" value={mountedAt} />
       <div aria-hidden="true" className="absolute -left-[10000px] top-auto">
         <label>
-          Website (leave blank)
+          Leave this field empty
           <input
             type="text"
             name="website"
