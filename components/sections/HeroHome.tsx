@@ -4,21 +4,12 @@ import { EyebrowLine } from '@/components/primitives/EyebrowLine'
 import { OrchestrationCore } from '@/components/sections/OrchestrationCore'
 import { homeContent } from '@/content/home'
 
-const VOLUME = 'Vol. IV · No. 02'
-
 export function HeroHome() {
   const { hero } = homeContent
-  const year = new Date().getFullYear()
 
   return (
-    <section className="relative pt-14 pb-16 md:pt-20 md:pb-24">
+    <section className="relative pt-16 pb-16 md:pt-24 md:pb-24">
       <Container>
-        <div className="mb-12 flex items-center justify-between border-t border-rule pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-subtle md:mb-16">
-          <span>{VOLUME}</span>
-          <span>{year} · Practice Review</span>
-          <span className="hidden md:inline">Built on paper</span>
-        </div>
-
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
           <div>
             <EyebrowLine num="№ 01">{hero.eyebrow}</EyebrowLine>
