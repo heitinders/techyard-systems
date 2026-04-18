@@ -1,0 +1,673 @@
+# Techyard Systems — Website Redesign Design Spec
+
+**Date:** 2026-04-18
+**Status:** Draft — pending spec review
+**Project directory:** `/Users/heitindersingh/techyardsystems-redesign/`
+**Current site under replacement:** https://techyardsystems.com
+**Author:** Heitinder Singh (client-engaged redesign)
+
+---
+
+## 1. Overview
+
+### What we're building
+
+A full-parity redesign of techyardsystems.com as a production-ready Next.js 15 (App Router) application. The client, Techyard Systems, builds custom AI agents for mid-to-large enterprise workflow automation — customer support, sales lead generation, IT/HR request management, data analysis, and operations/logistics monitoring.
+
+The new site replaces the current one across nine top-level pages plus two dynamic route templates (case study detail, journal post). It is a marketing site — no authenticated product surface, no user accounts, no database.
+
+### Why
+
+The current site is generic B2B SaaS in appearance: blue gradients, icon grids, template-like hero sections. It does not differentiate Techyard Systems from the saturated field of AI-agent vendors who all look visually identical. The redesign commits to an **Editorial Minimal** aesthetic — serif headlines, warm off-white stone palette, italic accent phrasing — that positions Techyard Systems as a thoughtful practice rather than a vendor, and makes the site visually distinctive in the category.
+
+### Success criteria
+
+1. **Visual distinctiveness** — the site should not pass the "AI made this" test. A visitor should not be able to identify the site as templated or AI-generated within three seconds.
+2. **Credibility signal surface** — case studies and the practice-based services layout should be the strongest signals on the site, not logos or metric-banner-cards.
+3. **Lighthouse baselines in production:** Performance ≥ 95, Accessibility = 100, Best Practices ≥ 95, SEO = 100. CLS < 0.05, LCP < 2.0s on 3G-like conditions.
+4. **WCAG 2.2 AA conformance** — verified via axe + manual VoiceOver walkthrough before launch.
+5. **Zero-friction content updates** — adding a case study or journal post requires only committing one MDX file; no schema migration, no rebuild required beyond ISR.
+
+### Brand naming (hard rule)
+
+The brand is **Techyard Systems**, never "Techyard" alone. Every production surface — navigation, footer, page titles, OpenGraph tags, schema.org markup, wordmark, meta descriptions — must use the full name. "Techyard" is acceptable only in internal notes and is explicitly disallowed in shipped code and copy.
+
+---
+
+## 2. Scope and non-goals
+
+### In scope (V1)
+
+**Static pages:**
+- `/` — Home
+- `/services` — Services (5 practices, deep)
+- `/about` — About (team, philosophy, values)
+- `/contact` — Contact (form + Calendly + direct email)
+- `/security` — Security & Compliance (FAQ + badges)
+- `/privacy` — Privacy Policy (MDX)
+- `/terms` — Terms of Service (MDX)
+
+**Dynamic content:**
+- `/work` — Case studies index (filterable by industry)
+- `/work/[slug]` — Case study detail (MDX-driven)
+- `/journal` — Journal index
+- `/journal/[slug]` — Journal post (MDX-driven)
+
+**API routes:**
+- `POST /api/contact` — validates + sends via Resend
+- `GET /api/og/[...slug]` — dynamic OpenGraph image generation
+
+**SEO/GEO assets:**
+- `/sitemap.xml`
+- `/robots.txt`
+- `/llms.txt`
+- JSON-LD structured data on every page
+
+**Placeholder content (written by implementer in brand voice):**
+- All page copy
+- Wordmark treatment in Newsreader (client can supply refined logo later)
+- Three realistic case studies with fabricated metrics, clearly flagged as placeholder
+- Five journal posts (initial content)
+- Team member placeholders (client provides real bios + photos)
+
+### Non-goals (explicit V1 exclusions)
+
+- **No CMS integration.** Content lives as MDX files in the repo. Migration to Sanity/Contentful/Payload is a V2 decision.
+- **No search.** Small site; filters on `/work` and CMD+F are sufficient.
+- **No dark mode.** Tokens are structured to support it, but V1 ships light-only.
+- **No internationalization.** English only.
+- **No authentication, user accounts, or database.**
+- **No cookie banner** (Plausible is privacy-first and cookie-less; no banner legally required).
+- **No blog commenting system.**
+- **No newsletter signup in V1** (can add post-launch if client requests).
+- **No live chat widget.**
+
+---
+
+## 3. Information architecture
+
+### Site map
+
+```
+techyardsystems.com/
+├── / ........................... Home ...................... SSG
+├── /services ................... Services ................... SSG
+├── /about ...................... About ...................... SSG
+├── /contact .................... Contact .................... SSG + client island for form
+├── /work ....................... Case Studies index ......... SSG (ISR on content change)
+│   └── /work/[slug] ............ Case Study detail .......... SSG + ISR
+├── /journal .................... Blog/Journal index ......... SSG + ISR
+│   └── /journal/[slug] ......... Journal post ............... SSG + ISR
+├── /security ................... Security & Compliance ...... SSG
+├── /privacy .................... Privacy Policy ............. SSG (MDX)
+└── /terms ...................... Terms of Service ........... SSG (MDX)
+
+API:
+├── /api/contact ................ POST, Resend-backed ........ Dynamic
+└── /api/og/[...slug] ........... OG image generation ........ Dynamic (edge)
+
+SEO assets:
+├── /sitemap.xml ................ Built-in Next.js generator
+├── /robots.txt ................. Built-in Next.js generator
+└── /llms.txt ................... Static file at public/
+```
+
+### URL naming decisions
+
+- `/work` (not `/case-studies`) — shorter, consultancy voice, better share-ability.
+- `/journal` (not `/blog`) — editorial tone, fits publication aesthetic.
+- `/security` (not `/trust-center`) — plain language, anti-marketing-speak.
+
+### Primary navigation
+
+Five elements: `Work · Services · Journal · About · [Book a call]` CTA. One CTA in nav — no duplicate buttons. Nav is sticky, translucent stone (`rgba(241,237,228,0.88)` with backdrop blur), border-bottom hairline on scroll.
+
+### Rendering strategy
+
+- **SSG at build** for all static pages.
+- **ISR (`revalidate: 3600`)** for case study and journal routes so MDX commits propagate within ~2 minutes without full redeploy.
+- **Dynamic** only for `/api/contact` (POST handler) and `/api/og/[...slug]` (edge image generation).
+
+---
+
+## 4. Visual system
+
+### 4.1 Color tokens
+
+All colors defined as CSS custom properties in `styles/tokens.css`; Tailwind v4 reads them via `@theme`.
+
+| Token | Value | Role |
+|---|---|---|
+| `--color-paper` | `#F1EDE4` | Primary page background (Stone) |
+| `--color-paper-raised` | `#FFFAF0` | Cards, raised surfaces |
+| `--color-ink` | `#2A2F26` | Primary text, dark sections, primary button (Charcoal) |
+| `--color-ink-muted` | `#6B7165` | Secondary text, captions (Moss) |
+| `--color-ink-subtle` | `#8A7F6B` | Meta text, dates, tertiary labels (Walnut) |
+| `--color-accent` | `#4A6152` | Italic accent, links, eyebrow labels, focus ring (Sage) |
+| `--color-rule` | `#E3DCCD` | Dividers, subtle borders (Flax) |
+| `--color-ink-deep` | `#1A1D18` | Footer background, optional dark-mode base (Obsidian) |
+
+**Contrast verification:**
+- Charcoal on Stone: 11.8:1 (AAA)
+- Moss on Stone: 5.1:1 (AA)
+- Sage on Stone: 5.3:1 (AA)
+- Sage on Charcoal: 2.2:1 — **decorative use only, never body text**
+
+**Usage rules:**
+- Sage appears only as italic accent in headlines, links, eyebrow labels, and the focus ring. It never appears as a button fill, card background, or body text color. Enforcing this rule preserves the editorial character of the system.
+- No "success green," "danger red," or "warning yellow" colors. Form states derive from ink weight + sage accent. Destructive confirmations use a bolder ink + explicit text, not a color.
+
+### 4.2 Typography
+
+Two families, both free Google Fonts, loaded via `next/font/google`:
+
+- **Newsreader** (serif, variable `opsz 6..72`) — all headlines, ledes, pull quotes, and journal body text.
+- **Space Grotesk** (sans, `400/500/600`) — UI, buttons, body on all non-journal pages, eyebrow labels, meta text.
+- **JetBrains Mono** (optional, used only for code blocks in journal posts).
+
+**Fluid type scale** (all use `clamp()` for breakpoint-free responsiveness):
+
+| Role | Family | Size | LH | Tracking |
+|---|---|---|---|---|
+| Display | Newsreader 500 | `clamp(56px, 10vw, 96px)` | 0.98 | -2.4px |
+| H1 | Newsreader 500 | `clamp(42px, 6vw, 64px)` | 1.05 | -1.6px |
+| H2 | Newsreader 500 | `clamp(32px, 4.5vw, 44px)` | 1.1 | -1px |
+| H3 | Newsreader 500 | 28px | 1.2 | -0.5px |
+| Lede | Newsreader 400 italic | 22px | 1.4 | — |
+| Body (site) | Space Grotesk 400 | 17px | 1.6 | — |
+| Body (journal) | Newsreader 400 | 19px | 1.7 | — |
+| UI / button | Space Grotesk 500 | 14px | 1.5 | — |
+| Eyebrow | Space Grotesk 500 | 11px | 1.4 | 2px uppercase |
+
+**Reading measure:** 66ch max for sans body, 680px column for journal posts.
+
+### 4.3 Spacing scale
+
+8-point base scale plus fluid section padding:
+
+```
+--space-xs:      4px
+--space-sm:      8px
+--space-md:     16px
+--space-lg:     24px
+--space-xl:     40px
+--space-2xl:    64px
+--space-3xl:   104px
+--space-section: clamp(80px, 12vw, 160px)   // vertical section rhythm
+--container:    1180px max-width
+```
+
+### 4.4 Radius
+
+Four values, nothing else:
+- `--r-none: 0` — rules, hairlines
+- `--r-sm: 4px` — inputs
+- `--r-md: 12px` — cards, figures
+- `--r-lg: 18px` — large feature panels, heroes
+- `--r-pill: 999px` — CTAs, chips
+
+### 4.5 Motion
+
+```
+--dur-instant:  80ms   // focus, press
+--dur-fast:    180ms   // hover, reveal
+--dur-base:    320ms   // page transition
+--dur-slow:    520ms   // stagger entrance
+--ease-out-quart: cubic-bezier(.22, 1, .36, 1)   // entrance default
+--ease-out-expo:  cubic-bezier(.16, 1, .3, 1)    // dramatic reveal
+```
+
+`prefers-reduced-motion: reduce` collapses all `--dur-*` to 0ms. No elastic/bounce easing. Motion conveys meaning (entrances, state changes) — decorative-only motion is disallowed.
+
+### 4.6 Interactive states
+
+Three patterns only:
+
+1. **Primary button** — charcoal fill, stone text, pill radius. Hover: translate-y 2px.
+2. **Secondary button** — transparent, charcoal 1px border, charcoal text. Hover: fill to charcoal.
+3. **Text link** — sage color, 4px underline offset. Hover: thicker underline.
+
+**Focus ring:** `2px solid sage` + `2px offset`. Never removed. Never replaced with a box-shadow-only alternative.
+
+---
+
+## 5. Page designs
+
+### 5.1 Home (`/`)
+
+Section order (top to bottom):
+
+1. **Nav** — sticky, translucent stone with backdrop blur
+2. **Hero** — eyebrow ("Autonomous systems · est. practice"), display headline ("Agents that actually *work.*"), italic lede, primary + ghost CTAs
+3. **Proof strip** — 4-column metrics (68% reduction · 4× faster · 5× ROI · 7+ industries) under a hairline rule, NOT as stat cards
+4. **Practices** — numbered list (№ 01–05), H3 headline + description per practice, right-arrow accent, dividing rules
+5. **Featured case study** — dark band (charcoal background), split layout: pull quote on left, 3-stat panel on right, "Read the full study →" link
+6. **Industries grid** — 4×2 grid of industries with case-study counts, full-bleed with hairline dividers (stones-grid appearance)
+7. **How we work** — 3-column phases (Discovery · Build · Handover) with italic step labels
+8. **CTA band** — Flax background (`#E3DCCD`), centered headline + italic sub + primary CTA
+9. **Footer** — Obsidian background, 4-column grid (brand + sub / practice / company / contact), hairline rule, bottom row
+
+### 5.2 Case study detail (`/work/[slug]`)
+
+Layout:
+
+1. Nav + breadcrumb (Work / Industry / Title)
+2. **Hero** — asymmetric: left = eyebrow + display title + italic lede; right = sidebar meta panel (client, industry, engagement weeks, practice, published date)
+3. **Stat band** — dark charcoal, 3 outcomes (value + note), italic accent on units (`%`, `×`, `$`)
+4. **Body** — 2-column: left = sticky table of contents (66ch article measure); right = MDX prose with H2 anchors, pull quotes, figures with captions
+5. **Next case study** — Flax band with auto-linked "№ N next" or manual `nextSlug` override
+
+Placeholder-friendly: if `clientDisclosed: false`, render "Tier-1 [industry] (disclosed on request)".
+
+### 5.3 Journal post (`/journal/[slug]`)
+
+Layout:
+
+1. Nav + thin obsidian top band ("Techyard Systems · Journal № N")
+2. **Centered header** — category chip, display title, italic subtitle, author + reading time + date
+3. **Feature image** — 16:9 full-width (minus container margins), 18px radius, `next/image` AVIF+WebP; optional (null in frontmatter = no image)
+4. **Body** — 680px column, serif body at 19px, drop cap on first paragraph (CSS `::first-letter`), pull quotes, code blocks (JetBrains Mono on Obsidian)
+5. **Author signature** — avatar + name + role, hairline-separated
+6. **Related posts** — Flax band, 3-column grid, auto-selected by category or manually via `relatedSlugs`
+
+### 5.4 Services (`/services`)
+
+Hero + deep-dive practice list (reuses homepage practice pattern but with right-column meta: typical timeline, best-fit criteria, measurable-by outcome). Each practice gets tags for integrations (Zendesk, HubSpot, Okta, etc.). CTA band at bottom.
+
+### 5.5 About (`/about`)
+
+Editorial split: left = narrative paragraph and lede; right = values grid (4 cards: "Own the outcome," "No lock-in," "Ship in weeks," "Tell the truth"). Below: team grid (2×N, avatar + name + role). CTA band at bottom.
+
+### 5.6 Contact (`/contact`)
+
+Two-column:
+- **Left (primary):** form — name, email, company, practice-interest chips (multi-select), message textarea, submit button. Form posts to `/api/contact`. Honeypot field hidden. Success state replaces form with thank-you message.
+- **Right (sidebar):** Calendly embed card (Flax bg), direct contact info (email, response time, based-in).
+
+### 5.7 Security (`/security`)
+
+Hero + 4 category chips (Data handling · Compliance · Model ownership · Access & auth) + FAQ accordion (Radix `Accordion`) + compliance badges grid at bottom (SOC 2, GDPR, HIPAA-ready, ISO 27001). FAQ content is MDX-backed so updates don't require code changes.
+
+---
+
+## 6. Content model
+
+### 6.1 Case study schema
+
+File: `content/case-studies/*.mdx`
+
+```typescript
+{
+  slug: string                  // from filename
+  number: string                // "№ 03"
+  clientName: string            // "Tier-1 3PL (disclosed on request)"
+  clientDisclosed: boolean      // true = real name; false = anonymized rendering
+  industry: IndustryEnum        // logistics | financial | healthcare | saas | ecommerce | pro-services | government | manufacturing
+  practice: PracticeEnum        // support | sales | it-hr | data | ops
+  engagementWeeks: number
+  engagementType: "fixed fee" | "pilot" | "retainer"
+  publishedAt: Date
+  title: string                 // full display headline
+  titleAccent: string           // italic substring of title
+  lede: string                  // 1-2 sentence italic summary
+  pullQuote: string | null      // optional — for homepage featured
+  pullAttribution: string | null
+  outcomes: [Outcome, Outcome, Outcome]   // exactly 3 for the stat band
+  featured: boolean             // appears on homepage
+  nextSlug: string | null       // manual "next" override
+  body: MDX                     // long-form with H2 anchors
+}
+
+type Outcome = {
+  eyebrow: string               // "Outcome 01"
+  value: string                 // "68"
+  valueAccent: string           // "%"  (rendered italic in sage)
+  note: string                  // 1-sentence context
+}
+```
+
+### 6.2 Journal post schema
+
+File: `content/journal/*.mdx`
+
+```typescript
+{
+  slug: string
+  number: string                // "Journal № 14"
+  category: "Field notes" | "Opinion" | "Notes" | "Fieldwork"
+  title: string
+  titleAccent: string           // italic portion
+  subtitle: string
+  publishedAt: Date
+  readingMinutes: number        // auto-calculated, overridable
+  author: Author
+  featureImage: Image | null
+  body: MDX
+  relatedSlugs: string[] | null // manual override; else auto by category
+}
+
+type Author = {
+  name: string
+  role: string
+  avatar: Image
+}
+```
+
+### 6.3 Taxonomies
+
+File: `content/taxonomies.ts`
+
+```typescript
+export const industries = [
+  "logistics", "financial", "healthcare", "saas",
+  "ecommerce", "pro-services", "government", "manufacturing"
+] as const;
+
+export const practices = [
+  "support", "sales", "it-hr", "data", "ops"
+] as const;
+
+export type Industry = typeof industries[number];
+export type Practice = typeof practices[number];
+```
+
+Adding a new industry/practice = one edit to this file; types propagate everywhere (frontmatter validation, filter UI, TypeScript types).
+
+### 6.4 Home-page content
+
+Stored as a typed TypeScript object (not MDX) at `content/home.ts` — the home page is a fixed composition, not streamed content. MDX is the wrong tool for "hero eyebrow + hero headline + hero lede," so we don't use it.
+
+### 6.5 Velite configuration
+
+`velite.config.ts` scans `content/case-studies/*.mdx` and `content/journal/*.mdx`, validates each with the zod schemas above, and emits `.velite/index.ts` with typed arrays:
+
+```typescript
+export const allCaseStudies: CaseStudy[];
+export const allJournalPosts: JournalPost[];
+```
+
+Pages import from `.velite/` — not from raw MDX. A missing required field fails `pnpm build` with a precise error; no broken content reaches production.
+
+---
+
+## 7. Technical architecture
+
+### 7.1 Folder structure
+
+```
+techyardsystems-redesign/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx                         → /
+│   ├── services/page.tsx                → /services
+│   ├── about/page.tsx                   → /about
+│   ├── contact/page.tsx                 → /contact
+│   ├── security/page.tsx                → /security
+│   ├── work/
+│   │   ├── page.tsx                     → /work (index)
+│   │   └── [slug]/page.tsx              → /work/[slug]
+│   ├── journal/
+│   │   ├── page.tsx                     → /journal (index)
+│   │   └── [slug]/page.tsx              → /journal/[slug]
+│   ├── privacy/page.tsx                 → /privacy (MDX)
+│   ├── terms/page.tsx                   → /terms (MDX)
+│   ├── api/
+│   │   ├── contact/route.ts
+│   │   └── og/[...slug]/route.tsx
+│   ├── sitemap.ts
+│   ├── robots.ts
+│   ├── not-found.tsx
+│   ├── error.tsx
+│   └── globals.css
+├── components/
+│   ├── primitives/                      Button, Link, Container, Section, Grid
+│   ├── layout/                          Nav, Footer, Breadcrumb
+│   ├── content/                         MDXComponents (h1..h6, blockquote, PullQuote, Figure, Code)
+│   └── sections/                        HeroHome, PracticesList, FeaturedCaseStudy, CTABand, IndustriesGrid, HowWeWork
+├── content/
+│   ├── case-studies/                    *.mdx
+│   ├── journal/                         *.mdx
+│   ├── pages/                           security.mdx, privacy.mdx, terms.mdx
+│   ├── taxonomies.ts
+│   └── home.ts
+├── lib/
+│   ├── mdx.ts                           velite helpers
+│   ├── seo.ts                           generateMetadata + JSON-LD builders
+│   └── resend.ts                        email client + HTML template
+├── public/
+│   ├── llms.txt
+│   ├── favicons/
+│   └── (static assets)
+├── styles/
+│   └── tokens.css                       CSS custom properties from §4
+├── .env.local
+├── velite.config.ts
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json
+```
+
+### 7.2 Dependency inventory
+
+**Runtime:**
+- `next@^15`
+- `react@^19`, `react-dom@^19`
+- `tailwindcss@^4`
+- `velite` — MDX + zod content pipeline
+- `zod` — schema validation (velite, form, API)
+- `resend` — transactional email
+- `motion` — orchestrated hero entrance reveals only
+- `@vercel/og` — OG image generation
+- `next-plausible` — analytics script injection
+- `@radix-ui/react-dialog` — accessible mobile nav
+- `@radix-ui/react-accordion` — accessible Security FAQ
+- `@radix-ui/react-slot` — polymorphic link-as-button
+
+**Dev:**
+- `typescript`, `@types/*`
+- `vitest`, `@vitejs/plugin-react`, `@testing-library/react` — unit/integration
+- `@playwright/test` — E2E + visual regression
+- `eslint`, `eslint-config-next`, `@typescript-eslint/*`
+- `prettier`, `prettier-plugin-tailwindcss`
+- `lighthouse-ci` — CI performance budgets
+
+Explicitly *not* included: `shadcn/ui` (aesthetic mismatch), `date-fns` or `dayjs` (Intl.DateTimeFormat suffices), state managers, ORM, form libraries beyond what zod + React native forms provide.
+
+### 7.3 Data flow
+
+**Content → pages.**
+1. Author commits an MDX file to `content/`.
+2. `pnpm build` runs velite; velite validates frontmatter with zod, compiles MDX body, writes `.velite/index.ts`.
+3. Pages import `allCaseStudies` / `allJournalPosts` at module level.
+4. `generateStaticParams()` emits every `[slug]` at build.
+5. ISR `revalidate: 3600` lets pushes hit production in ~2 minutes.
+
+**Contact form flow.**
+1. `/contact` renders `<ContactForm />` client island.
+2. Submit fires `action` with `useActionState`.
+3. Server action POSTs to `/api/contact`.
+4. Route handler zod-validates body, rejects with 400 + field errors on failure.
+5. On success, Resend sends:
+   - Admin email → `contactus@techyardsystems.com` (full submission)
+   - Reply-to set to submitter; confirmation auto-reply to submitter
+6. Honeypot hidden input + Vercel Edge rate-limit (or Upstash if abuse appears).
+7. Response `{ ok: true }` → form replaces with thank-you state.
+
+**OG image flow.**
+1. Page's `generateMetadata()` sets `openGraph.images: [/api/og/work/[slug]]`.
+2. Request to `/api/og/[...slug]` — edge route looks up slug, renders `<div>` tree to PNG via `@vercel/og` using Newsreader-on-Stone composition.
+3. Vercel caches forever (immutable URL per slug).
+
+### 7.4 Build & deploy
+
+- Hosted on **Vercel**.
+- Preview deployments per branch (critical for client approvals during build).
+- Production domain at `techyardsystems.com`.
+- Old site preserved at `old.techyardsystems.com` for 30 days post-launch as rollback insurance.
+- Environment variables: `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_SITE_URL`.
+
+---
+
+## 8. SEO and GEO strategy
+
+### 8.1 Per-page metadata
+
+Every page implements `generateMetadata()` returning:
+- `title` + `description` (from frontmatter or static config)
+- `canonical` URL
+- `openGraph` — `url`, `title`, `description`, `images: [og-api-url]`, `type`
+- `twitter` — `card: summary_large_image`, same image
+
+### 8.2 Structured data (JSON-LD)
+
+Injected per page type via helper functions in `lib/seo.ts`:
+
+- **Home + About** — `Organization` with `name`, `url`, `sameAs`, `contactPoint`, `foundingDate`
+- **Services** — `Service` schema per practice, nested under Organization
+- `/work/[slug]` — `Article` + custom `CaseStudy` extension with `datePublished`, `author`, `articleBody`
+- `/journal/[slug]` — `Article` + `BlogPosting` + `Person` author
+- `/security` — `FAQPage` with `Question`/`Answer` pairs
+
+### 8.3 Dynamic OpenGraph images
+
+`@vercel/og` renders a unique OG card per page: Newsreader serif title on Stone background with Techyard Systems wordmark and sage accent underline. Each card is unique per page title — dramatically improves LinkedIn share CTR vs. a static card.
+
+### 8.4 Sitemap + robots + llms.txt
+
+- `app/sitemap.ts` — generates from all static routes + all MDX slugs.
+- `app/robots.ts` — allow all, reference sitemap, no AI-crawler blocks.
+- `public/llms.txt` — canonical summary + pointers to key pages. Signals to ChatGPT web search, Perplexity, Claude web for citation eligibility.
+
+### 8.5 Redirects
+
+`next.config.ts` permanent redirects from old site's URLs:
+- `/case-studies/*` → `/work/*`
+- `/blog/*` → `/journal/*`
+- Any specific legacy URLs captured from the current sitemap
+
+---
+
+## 9. Accessibility commitments
+
+Target: **WCAG 2.2 AA**, verified not assumed.
+
+- **Color contrast** pre-verified per §4.1 token table; tokens lint at review time.
+- **Focus indicators**: 2px sage ring + 2px offset on every interactive surface. Never `outline: none` without a replacement.
+- **Keyboard navigation**: logical tab order, skip-to-main link first focusable on every page.
+- **Semantic HTML first**; ARIA only where semantics are insufficient (Radix-backed accordion + dialog).
+- **`prefers-reduced-motion: reduce`** — all `--dur-*` collapse to 0ms. Non-essential entrance motion suppressed.
+- **Images**: `next/image` with meaningful `alt`; decorative backgrounds `alt=""`.
+- **Forms**: visible `<label>` per field (not placeholder-only), inline error via `aria-describedby`, focus first invalid field on submit failure, `aria-live="polite"` for async states.
+- **Heading hierarchy**: h1 per page, sequential h2..h6 with no skipped levels.
+- **Screen-reader pass before launch** — VoiceOver (Safari macOS/iOS) + NVDA (Windows Firefox) manual walkthrough of home, case study detail, journal post, contact form.
+
+---
+
+## 10. Testing strategy
+
+### 10.1 Unit / integration
+
+- **Vitest** for `lib/` utilities (MDX helpers, SEO builders, form validators).
+- Target: meaningful coverage of business logic, not line-count coverage.
+
+### 10.2 Content validation
+
+- **velite + zod** = primary content test. Bad frontmatter fails `pnpm build`.
+
+### 10.3 End-to-end
+
+- **Playwright**, ~10 flows:
+  1. Home loads; proof strip values render
+  2. Nav links work + sticky nav behaves
+  3. Contact form submits (Resend mocked) and success state renders
+  4. Contact form fails validation with inline errors for missing required fields
+  5. Case study page renders with ToC + stat band
+  6. Journal post renders with drop cap + related posts
+  7. 404 page renders for bad slug
+  8. `prefers-reduced-motion` suppresses entrance motion
+  9. Keyboard-only: full nav path reaches every link + form field + submit
+  10. `sitemap.xml` responds with 200 and valid XML
+
+### 10.4 Visual regression
+
+- **Playwright screenshots** for 4 key pages at mobile (375px) + desktop (1440px):
+  - `/` (home, full scroll)
+  - `/work/[slug]` (representative case study)
+  - `/journal/[slug]` (representative journal post)
+  - `/contact`
+
+### 10.5 Performance budgets (CI-enforced)
+
+- Lighthouse CI on every PR:
+  - Performance ≥ 95
+  - Accessibility = 100
+  - Best Practices ≥ 95
+  - SEO = 100
+  - CLS < 0.05
+  - LCP < 2.0s (mobile, 4G)
+
+---
+
+## 11. Launch and rollback plan
+
+### 11.1 Pre-launch checklist
+
+- [ ] Environment variables set in Vercel production
+- [ ] Custom domain + SSL configured
+- [ ] Favicons (multi-size) + `apple-touch-icon` + `manifest.json`
+- [ ] `next.config.ts` redirects from legacy paths (`/case-studies/*` → `/work/*`, `/blog/*` → `/journal/*`)
+- [ ] Plausible tracking verified + goals set (contact form submit, Calendly click)
+- [ ] All placeholder copy replaced with client-approved copy
+- [ ] Wordmark finalized (or client-supplied logo wired in)
+- [ ] Final axe audit passing
+- [ ] Final VoiceOver walkthrough recorded/signed off
+- [ ] Production Lighthouse run meeting budgets
+- [ ] `llms.txt` reviewed and matches live content structure
+- [ ] OG images preview correctly on LinkedIn + Twitter + iMessage
+
+### 11.2 Launch
+
+1. Deploy to Vercel production.
+2. Keep old site live at `old.techyardsystems.com` (CNAME to current host).
+3. DNS cut `techyardsystems.com` A/AAAA to Vercel.
+4. Submit new sitemap to Google Search Console + Bing Webmaster Tools.
+5. Verify Plausible is tracking.
+
+### 11.3 Rollback
+
+- If a critical production issue appears (form completely broken, hero failing to render, performance regression > 20%):
+  - DNS cut-back to `old.techyardsystems.com`'s origin takes 5–60 minutes depending on TTL (pre-set TTL to 300s on launch day).
+  - Keep rollback option live for 30 days.
+- Lesser issues (typos, small layout bugs) fix-forward on the new site.
+
+---
+
+## 12. Out-of-scope items (for V2 consideration)
+
+Not implemented in V1 but explicitly considered:
+
+- Headless CMS migration (Sanity or Payload) — trigger if content team grows beyond dev-led editing
+- Dark mode — tokens already support; UI toggle is the only missing piece
+- Newsletter signup + email capture
+- Search across `/journal` + `/work` (Pagefind or Algolia)
+- i18n (additional locales if Techyard Systems expands geographically)
+- Blog RSS feed
+- Video case studies embedded in `/work/[slug]`
+
+---
+
+## 13. Open questions (flagged before spec review)
+
+None as of 2026-04-18. All decisions documented above were validated with the stakeholder during brainstorming. This section exists to be populated if spec review surfaces gaps.
+
+---
+
+## 14. Glossary
+
+- **SSG** — Static Site Generation. Page rendered at build time, served as static HTML.
+- **ISR** — Incremental Static Regeneration. Next.js pattern that rebuilds individual static pages on a schedule or on-demand without a full redeploy.
+- **MDX** — Markdown + JSX. Plain-text content format with component embeds, used here for case studies and journal posts.
+- **Velite** — MDX + zod content pipeline; successor to contentlayer.
+- **GEO** — Generative Engine Optimization. SEO for AI-answer engines (ChatGPT web, Perplexity, Claude, Gemini).
+- **`llms.txt`** — Emerging standard at site root that summarizes the site for AI crawlers.
