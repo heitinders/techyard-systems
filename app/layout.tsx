@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { newsreader, spaceGrotesk, jetbrainsMono } from './fonts'
 import './globals.css'
+import { Nav } from '@/components/layout/Nav'
+import { Footer } from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
   title: { default: 'Techyard Systems', template: '%s — Techyard Systems' },
@@ -15,11 +17,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${newsreader.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="font-sans text-[17px] leading-[1.6] text-ink antialiased">
-        <a href="#main" className="skip-link">
-          Skip to main content
-        </a>
-        {children}
+      <body className="flex min-h-dvh flex-col font-sans text-[17px] leading-[1.6] text-ink antialiased">
+        <a href="#main" className="skip-link">Skip to main content</a>
+        <Nav />
+        <main id="main" className="flex-1">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   )
