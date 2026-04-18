@@ -2,7 +2,7 @@
 # Techyard Systems — Website Redesign Design Spec
 
 **Date:** 2026-04-18
-**Status:** Draft v2.1 — stakeholder review applied + three stray-reference follow-ups fixed per re-review
+**Status:** Approved v2.2 — implementation in progress on `impl/v1` branch
 **Project directory:** `/Users/heitindersingh/techyardsystems-redesign/`
 **Current site under replacement:** <https://techyardsystems.com>
 **Author:** Heitinder Singh (client-engaged redesign)
@@ -13,6 +13,7 @@
 - **v1.1 (2026-04-18 14:10)** — applied reviewer advisories: corrected radius count, documented ghost button + chip states, resolved server-action vs route-handler ambiguity, corrected JSON-LD types (no `CaseStudy` type), explicit outcomes-tuple rule, drop-cap a11y note, V1 build vs V1 launch sequencing.
 - **v2 (2026-04-18 15:00)** — applied stakeholder review: dropped ISR (vestigial with MDX-in-repo); fixed DNS TTL timing (48h pre-cut, not same-day); completed env var list; removed orphan `api/contact/route.ts`; added font loading strategy; added security headers + `SECURITY.md` + `/.well-known/security.txt`; Calendly lazy-load-on-click (fixes cookie-banner contradiction); image strategy and `<Figure>` component; contact form delivery-failure UX branch; preview-deploy noindex + password protection; CI-enforced brand-name lint; OG-route Playwright test; outcomes rule relaxed to `3 or 1` discriminated union; journal cadence gate in pre-launch checklist; webhook/server-action limitation flagged in §12; 404 + error page designs; sitemap `priority`/`changefreq` for Bing; chip ARIA pattern; cross-browser drop-cap visual regression.
 - **v2.1 (2026-04-18 15:30)** — fixed three stray ISR/route references that survived v2 revision per spec-reviewer: §1.5 success criterion (removed "beyond ISR"), §2 scope API-routes block (rewritten to name server action), §7.3 data-flow step 5 (ISR reference replaced with explicit "no ISR in V1" guidance). Added OG-route `/journal/*` prefix test per reviewer advisory.
+- **v2.2 (2026-04-18 implementation start)** — accepted Next.js 16.2.4 (current stable) in place of "Next.js 15" wording throughout the spec. All documented patterns (App Router, `generateStaticParams`, async `params: Promise<...>`, server actions, `next/og` `ImageResponse`, fully-static SSG) are compatible with Next.js 16. Cache Components are an opt-in feature in Next.js 16 and we do NOT opt in — the SSG-only rendering strategy in §3 holds unchanged. Turbopack is Next.js 16's default bundler (performance win, no code impact). Where the spec says "Next.js 15", read it as "Next.js 15 or later" — the App Router patterns are the load-bearing commitment, not the specific major version. The repo contains Next.js's scaffolder-generated `AGENTS.md` + `CLAUDE.md` with breaking-change warnings from the upgrade; these are retained so subagents working on later tasks have current API context.
 
 ---
 
