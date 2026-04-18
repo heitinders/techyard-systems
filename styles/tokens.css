@@ -1,0 +1,48 @@
+@layer tokens {
+  :root {
+    /* Colors — §4.1 */
+    --color-paper: #f1ede4;
+    --color-paper-raised: #fffaf0;
+    --color-ink: #2a2f26;
+    --color-ink-muted: #6b7165;
+    --color-ink-subtle: #8a7f6b;
+    --color-accent: #4a6152;
+    --color-rule: #e3dccd;
+    --color-ink-deep: #1a1d18;
+
+    /* Spacing — §4.3 */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 40px;
+    --space-2xl: 64px;
+    --space-3xl: 104px;
+    --space-section: clamp(80px, 12vw, 160px);
+    --container: 1180px;
+
+    /* Radius — §4.4 */
+    --r-none: 0;
+    --r-sm: 4px;
+    --r-md: 12px;
+    --r-lg: 18px;
+    --r-pill: 999px;
+
+    /* Motion — §4.5 */
+    --dur-instant: 80ms;
+    --dur-fast: 180ms;
+    --dur-base: 320ms;
+    --dur-slow: 520ms;
+    --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-instant: 0ms;
+      --dur-fast: 0ms;
+      --dur-base: 0ms;
+      --dur-slow: 0ms;
+    }
+  }
+}
