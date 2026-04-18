@@ -46,3 +46,14 @@
     }
   }
 }
+
+/* Journal drop cap — §5.3 */
+.journal-body > p:first-of-type::first-letter {
+  font-family: var(--font-newsreader), ui-serif, Georgia, serif;
+  font-size: 92px;
+  font-weight: 500;
+  line-height: 0.85;
+  float: left;
+  margin: 8px 14px 0 0;
+  color: var(--color-accent);
+}
