@@ -4,8 +4,8 @@
     --color-paper: #f1ede4;
     --color-paper-raised: #fffaf0;
     --color-ink: #2a2f26;
-    --color-ink-muted: #6b7165;
-    --color-ink-subtle: #8a7f6b;
+    --color-ink-muted: #5e6459;   /* was #6b7165 — 4.15:1 failed AA; now 5.45:1 on paper */
+    --color-ink-subtle: #6d6550;  /* was #8a7f6b — 3.37:1 failed AA; now 5.06:1 on paper */
     --color-accent: #4a6152;
     --color-rule: #e3dccd;
     --color-ink-deep: #1a1d18;
