@@ -31,6 +31,13 @@ export function Footer() {
             An autonomous-systems practice. We build AI agents that run the work you'd rather
             not hire for.
           </p>
+          <div className="mt-7 flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-paper/45">
+            <span
+              aria-hidden="true"
+              className="tys-status-dot inline-block h-[7px] w-[7px] rounded-full bg-[#7aa58c]"
+            />
+            All systems · operational
+          </div>
         </div>
         <FooterColumn title="Practice" links={practice} />
         <FooterColumn title="Company" links={company} />
@@ -53,9 +60,9 @@ export function Footer() {
         </div>
       </div>
       <div className="mx-auto mt-16 max-w-[1180px] border-t border-paper/10 pt-6">
-        <div className="flex justify-between font-mono text-xs text-paper/50">
-          <span>© {year} Techyard Systems</span>
-          <span>Made with care.</span>
+        <div className="flex flex-wrap justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.04em] text-paper/50">
+          <span>© {year} Techyard Systems LLC · Made with care, in the quiet.</span>
+          <span>v1.0 · est. 2023</span>
         </div>
       </div>
     </footer>
