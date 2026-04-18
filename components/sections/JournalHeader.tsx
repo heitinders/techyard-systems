@@ -1,4 +1,5 @@
 import type { JournalPost } from '#site/content'
+import Image from 'next/image'
 import { Container } from '@/components/primitives/Container'
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -57,6 +58,29 @@ export function JournalHeader({ post }: { post: JournalPost }) {
           </div>
         </Container>
       </section>
+
+      {post.featureImage ? (
+        <section className="bg-paper pb-16 md:pb-24">
+          <Container>
+            <figure className="overflow-hidden rounded-[var(--r-lg)] border border-rule">
+              <Image
+                src={post.featureImage.src}
+                alt={post.featureImage.alt}
+                width={post.featureImage.width}
+                height={post.featureImage.height}
+                sizes="(min-width: 1180px) 1100px, 100vw"
+                className="h-auto w-full"
+                priority
+              />
+              {post.featureImage.caption ? (
+                <figcaption className="border-t border-rule bg-paper-raised px-5 py-3 text-[12px] text-ink-subtle">
+                  {post.featureImage.caption}
+                </figcaption>
+              ) : null}
+            </figure>
+          </Container>
+        </section>
+      ) : null}
     </>
   )
 }
