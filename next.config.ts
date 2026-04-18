@@ -1,12 +1,31 @@
 import type { NextConfig } from 'next'
 
+const isDev = process.env.NODE_ENV === 'development'
+
+// React dev mode needs code-eval for stack reconstruction; Next HMR
+// needs it for module injection. React never uses it in production
+// (documented behavior), so we scope 'unsafe-eval' to NODE_ENV=dev.
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isDev ? ["'unsafe-eval'"] : []),
+  'plausible.io',
+].join(' ')
+
+// connect-src needs ws/wss + localhost for HMR in dev only.
+const connectSrc = [
+  "'self'",
+  ...(isDev ? ['ws:', 'wss:', 'http://localhost:*'] : []),
+  'plausible.io',
+].join(' ')
+
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' plausible.io",
+  `script-src ${scriptSrc}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://images.unsplash.com",
   "font-src 'self'",
-  "connect-src 'self' plausible.io",
+  `connect-src ${connectSrc}`,
   "frame-src calendly.com *.calendly.com",
   "form-action 'self'",
   "base-uri 'self'",

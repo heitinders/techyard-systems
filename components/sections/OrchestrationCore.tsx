@@ -24,6 +24,12 @@ const RADIUS = 175
 const CORE = 150
 const SIZE = RADIUS * 2 + CORE // total SVG/container square size
 
+// Round to 3 decimal places to eliminate sub-ULP float drift between
+// the Node SSR runtime and the browser runtime — both produce IEEE-754
+// doubles, but Number.prototype.toString can differ in the trailing
+// digits, which React 19 flags as a hydration mismatch on SVG attrs.
+const r3 = (n: number) => Math.round(n * 1000) / 1000
+
 export function OrchestrationCore() {
   const [tick, setTick] = useState(0)
   const [paused, setPaused] = useState(false)
@@ -41,8 +47,8 @@ export function OrchestrationCore() {
       const a = (n.angle * Math.PI) / 180
       return {
         ...n,
-        cx: SIZE / 2 + RADIUS * Math.cos(a),
-        cy: SIZE / 2 + RADIUS * Math.sin(a),
+        cx: r3(SIZE / 2 + RADIUS * Math.cos(a)),
+        cy: r3(SIZE / 2 + RADIUS * Math.sin(a)),
       }
     })
   }, [])
@@ -88,10 +94,10 @@ export function OrchestrationCore() {
           return (
             <line
               key={k}
-              x1={SIZE / 2 + r1 * Math.cos(a)}
-              y1={SIZE / 2 + r1 * Math.sin(a)}
-              x2={SIZE / 2 + r2 * Math.cos(a)}
-              y2={SIZE / 2 + r2 * Math.sin(a)}
+              x1={r3(SIZE / 2 + r1 * Math.cos(a))}
+              y1={r3(SIZE / 2 + r1 * Math.sin(a))}
+              x2={r3(SIZE / 2 + r2 * Math.cos(a))}
+              y2={r3(SIZE / 2 + r2 * Math.sin(a))}
               stroke="var(--color-rule)"
               strokeWidth="0.8"
             />
