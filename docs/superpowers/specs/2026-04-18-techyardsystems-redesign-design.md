@@ -70,6 +70,11 @@ The brand is **Techyard Systems**, never "Techyard" alone. Every production surf
 - Five journal posts (initial content)
 - Team member placeholders (client provides real bios + photos)
 
+**Sequencing note — "V1 build" vs "V1 launch":**
+- **V1 build** (shipped to staging / Vercel preview for client review) = structure and placeholder content in place, fully functional. Acceptable to ship placeholders into preview deploys.
+- **V1 launch** (DNS cut to production) = placeholders **must** be replaced with client-approved copy. The §11.1 pre-launch checklist gates on this. The current site stays live until the replacement copy lands.
+- This sequencing means the implementer ships fast into preview (placeholder-OK), and the copy pass happens in parallel with client review — not blocking engineering.
+
 ### Non-goals (explicit V1 exclusions)
 
 - **No CMS integration.** Content lives as MDX files in the repo. Migration to Sanity/Contentful/Payload is a V2 decision.
@@ -199,9 +204,9 @@ Two families, both free Google Fonts, loaded via `next/font/google`:
 
 ### 4.4 Radius
 
-Four values, nothing else:
-- `--r-none: 0` — rules, hairlines
-- `--r-sm: 4px` — inputs
+Five values, nothing else:
+- `--r-none: 0` — rules, hairlines, full-bleed dividers
+- `--r-sm: 4px` — inputs, form fields
 - `--r-md: 12px` — cards, figures
 - `--r-lg: 18px` — large feature panels, heroes
 - `--r-pill: 999px` — CTAs, chips
@@ -221,13 +226,15 @@ Four values, nothing else:
 
 ### 4.6 Interactive states
 
-Three patterns only:
+Five patterns, derived from the palette:
 
-1. **Primary button** — charcoal fill, stone text, pill radius. Hover: translate-y 2px.
-2. **Secondary button** — transparent, charcoal 1px border, charcoal text. Hover: fill to charcoal.
-3. **Text link** — sage color, 4px underline offset. Hover: thicker underline.
+1. **Primary button** — charcoal fill (`--color-ink`), stone text (`--color-paper`), pill radius. Hover: `translateY(-2px)` over 180ms. Active: translate reset + brief scale(0.98).
+2. **Secondary button** — transparent fill, 1px charcoal border, charcoal text, pill radius. Hover: fill → charcoal, text → stone.
+3. **Ghost button** — transparent fill, no border, charcoal text with 4px underline offset. Used for the "See recent work" pattern next to primary CTAs where a second bordered button would crowd the hero. Hover: underline thickens to 2px.
+4. **Text link** — sage color (`--color-accent`), 4px underline offset. Hover: underline thickens to 2px.
+5. **Chip (multi-select, used on Contact form)** — idle: stone (`--color-paper`) fill, flax border (`--color-rule`), charcoal text, pill radius. Selected: sage fill (`--color-accent`), stone text, sage border. Focused (keyboard): 2px sage outline with 2px offset, regardless of selected state.
 
-**Focus ring:** `2px solid sage` + `2px offset`. Never removed. Never replaced with a box-shadow-only alternative.
+**Focus ring (universal):** `2px solid var(--color-accent)` + 2px offset. Never removed. Never replaced with a box-shadow-only alternative. Applies to buttons, links, chips, form fields, and any custom interactive element.
 
 ---
 
@@ -267,6 +274,7 @@ Layout:
 2. **Centered header** — category chip, display title, italic subtitle, author + reading time + date
 3. **Feature image** — 16:9 full-width (minus container margins), 18px radius, `next/image` AVIF+WebP; optional (null in frontmatter = no image)
 4. **Body** — 680px column, serif body at 19px, drop cap on first paragraph (CSS `::first-letter`), pull quotes, code blocks (JetBrains Mono on Obsidian)
+   - **Drop cap accessibility:** `::first-letter` is styled via CSS only, which means screen readers read the paragraph normally (they do not re-announce the first letter separately). This is acceptable behavior per WCAG 2.2. We do not wrap the first letter in a `<span aria-hidden>` — that would require parsing the MDX-rendered paragraph at runtime and is unnecessary. We do ensure the first paragraph does not begin with an emoji or multi-byte character (authorial rule), as `::first-letter` behavior with those is undefined across browsers.
 5. **Author signature** — avatar + name + role, hairline-separated
 6. **Related posts** — Flax band, 3-column grid, auto-selected by category or manually via `relatedSlugs`
 
@@ -312,7 +320,7 @@ File: `content/case-studies/*.mdx`
   lede: string                  // 1-2 sentence italic summary
   pullQuote: string | null      // optional — for homepage featured
   pullAttribution: string | null
-  outcomes: [Outcome, Outcome, Outcome]   // exactly 3 for the stat band
+  outcomes: [Outcome, Outcome, Outcome]   // exactly 3 — enforced
   featured: boolean             // appears on homepage
   nextSlug: string | null       // manual "next" override
   body: MDX                     // long-form with H2 anchors
@@ -325,6 +333,8 @@ type Outcome = {
   note: string                  // 1-sentence context
 }
 ```
+
+**Content-authoring rule: exactly 3 outcomes per case study, no more, no less.** The dark stat band is designed around a 3-column layout; 1–2 outcomes leaves dead space and 4+ breaks the grid. This is enforced at the schema level (`[Outcome, Outcome, Outcome]` tuple) — velite will fail the build if violated. If a real engagement produces only 1 strong metric, pad with related supporting metrics (e.g., "1 outcome + 2 context measurements") or rewrite the case study around a different angle. Do not weaken the schema.
 
 ### 6.2 Journal post schema
 
@@ -411,9 +421,9 @@ techyardsystems-redesign/
 │   │   └── [slug]/page.tsx              → /journal/[slug]
 │   ├── privacy/page.tsx                 → /privacy (MDX)
 │   ├── terms/page.tsx                   → /terms (MDX)
+│   ├── contact/actions.ts               server action for form submit (see §7.3)
 │   ├── api/
-│   │   ├── contact/route.ts
-│   │   └── og/[...slug]/route.tsx
+│   │   └── og/[...slug]/route.tsx       (contact route.ts intentionally NOT created in V1)
 │   ├── sitemap.ts
 │   ├── robots.ts
 │   ├── not-found.tsx
@@ -484,15 +494,20 @@ Explicitly *not* included: `shadcn/ui` (aesthetic mismatch), `date-fns` or `dayj
 5. ISR `revalidate: 3600` lets pushes hit production in ~2 minutes.
 
 **Contact form flow.**
-1. `/contact` renders `<ContactForm />` client island.
-2. Submit fires `action` with `useActionState`.
-3. Server action POSTs to `/api/contact`.
-4. Route handler zod-validates body, rejects with 400 + field errors on failure.
-5. On success, Resend sends:
-   - Admin email → `contactus@techyardsystems.com` (full submission)
-   - Reply-to set to submitter; confirmation auto-reply to submitter
-6. Honeypot hidden input + Vercel Edge rate-limit (or Upstash if abuse appears).
-7. Response `{ ok: true }` → form replaces with thank-you state.
+
+The form uses a single submission path — React 19 server action — not a parallel `POST /api/contact` route. We expose one mechanism; no drift, no duplicate validation logic.
+
+1. `/contact` renders `<ContactForm />` as a client component (client island — the rest of the page is RSC).
+2. Submit fires `useActionState(submitContactForm, initialState)`.
+3. `submitContactForm` is a server action (`'use server'`) co-located in `app/contact/actions.ts`. It:
+   - Zod-validates the FormData against the contact schema
+   - Returns `{ ok: false, fieldErrors }` on validation failure (React re-renders form with inline errors)
+   - Calls Resend directly (no intermediate route handler):
+     - Admin email → `CONTACT_TO_EMAIL` (full submission, reply-to = submitter)
+     - Confirmation auto-reply → submitter
+   - Returns `{ ok: true }` on success → form replaces with thank-you state
+4. **Bot mitigation:** honeypot hidden input (`website`) rejected server-side; timing check rejects submits under 1.5s. If abuse materializes post-launch, add Upstash Redis + sliding-window rate-limit (10 submits / IP / hour) — a route-handler wrapper is *not* added just to enable this; we keep the action and gate inside it.
+5. **Note:** we do not use `/api/contact` (route handler) at all. The folder-structure listing above retains `app/api/contact/route.ts` only if future integrations require a non-form caller (e.g., Zapier webhook). For V1, that file is not created.
 
 **OG image flow.**
 1. Page's `generateMetadata()` sets `openGraph.images: [/api/og/work/[slug]]`.
@@ -525,8 +540,8 @@ Injected per page type via helper functions in `lib/seo.ts`:
 
 - **Home + About** — `Organization` with `name`, `url`, `sameAs`, `contactPoint`, `foundingDate`
 - **Services** — `Service` schema per practice, nested under Organization
-- `/work/[slug]` — `Article` + custom `CaseStudy` extension with `datePublished`, `author`, `articleBody`
-- `/journal/[slug]` — `Article` + `BlogPosting` + `Person` author
+- `/work/[slug]` — `Article` (schema.org has no native `CaseStudy` type) with `about` referencing the practice and `mentions` referencing the industry; include `datePublished`, `author`, `articleBody`, `headline`, `image` (OG image URL)
+- `/journal/[slug]` — `BlogPosting` (subclass of `Article`) with `Person` author, `datePublished`, `wordCount`, `articleBody`, `keywords` from category
 - `/security` — `FAQPage` with `Question`/`Answer` pairs
 
 ### 8.3 Dynamic OpenGraph images
