@@ -5,6 +5,8 @@ import { CaseStudyHero } from '@/components/sections/CaseStudyHero'
 import { CaseStudyStatBand } from '@/components/sections/CaseStudyStatBand'
 import { CaseStudyNext } from '@/components/sections/CaseStudyNext'
 import { MDXRender } from '@/components/content/MDXRender'
+import { JsonLd } from '@/components/content/JsonLd'
+import { buildArticleJsonLd } from '@/lib/seo'
 
 export function generateStaticParams() {
   return caseStudies.map((cs) => ({ slug: cs.slug }))
@@ -40,6 +42,13 @@ export default async function CaseStudyPage({
   const { slug } = await params
   const cs = caseStudies.find((c) => c.slug === slug)
   if (!cs) return notFound()
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const articleLd = buildArticleJsonLd(siteUrl, {
+    title: cs.title,
+    lede: cs.lede,
+    slug: cs.slug,
+    publishedAt: cs.publishedAt,
+  })
   return (
     <>
       <CaseStudyHero study={cs} />
@@ -48,6 +57,7 @@ export default async function CaseStudyPage({
         <MDXRender code={cs.body} />
       </article>
       <CaseStudyNext current={cs} />
+      <JsonLd data={articleLd} />
     </>
   )
 }

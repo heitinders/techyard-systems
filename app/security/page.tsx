@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import { Container } from '@/components/primitives/Container'
 import { SecurityFAQ } from '@/components/sections/SecurityFAQ'
 import { ComplianceBadges } from '@/components/sections/ComplianceBadges'
-import { securityCategories } from '@/content/security-faq'
+import { securityCategories, securityFAQ } from '@/content/security-faq'
+import { JsonLd } from '@/components/content/JsonLd'
+import { buildFaqPageJsonLd } from '@/lib/seo'
 
 export const metadata: Metadata = {
   title: 'Security & Compliance',
@@ -11,8 +13,12 @@ export const metadata: Metadata = {
 }
 
 export default function SecurityPage() {
+  const faqLd = buildFaqPageJsonLd(
+    securityFAQ.map((f) => ({ question: f.question, answer: f.answer })),
+  )
   return (
     <>
+      <JsonLd data={faqLd} />
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">
         <Container>
           <div className="mb-8 text-[11px] font-medium uppercase tracking-[2px] text-accent">
