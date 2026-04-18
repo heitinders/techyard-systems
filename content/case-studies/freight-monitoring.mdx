@@ -1,0 +1,55 @@
+---
+slug: "freight-monitoring"
+number: "№ 03"
+clientName: "Tier-1 3PL (disclosed on request)"
+clientDisclosed: false
+industry: "logistics"
+practice: "ops"
+engagementWeeks: 10
+engagementType: "fixed fee"
+publishedAt: 2026-03-20
+title: "A freight brokerage stopped watching dashboards."
+titleAccent: "stopped watching dashboards"
+lede: "A tier-1 3PL replaced three rounds of manual dispatcher work with a single monitoring agent — the dispatchers now only see the shipments that actually need a human."
+pullQuote: "The agent outperforms anyone we tried to hire."
+pullAttribution: "— VP of Operations, Tier-1 3PL"
+outcomes:
+  - eyebrow: "Outcome 01"
+    value: "68"
+    valueAccent: "%"
+    note: "Fewer shipments requiring human intervention per day, measured across a rolling 30-day window."
+  - eyebrow: "Outcome 02"
+    value: "4"
+    valueAccent: "×"
+    note: "Faster mean time to resolution for flagged anomalies, once an actual human was paged."
+  - eyebrow: "Outcome 03"
+    value: "$2.1"
+    valueAccent: "M"
+    note: "Annualised operating-cost reduction, validated by the client's finance team in Q1 2026."
+featured: true
+nextSlug: null
+---
+
+## The problem
+
+The dispatch team was spending 40% of their shift reviewing shipments that were fine — scanning dashboards for outliers, confirming nothing had broken, and responding to an unfiltered alerting system that cried wolf more often than it caught anything.
+
+The client had tried rule-based alerting, a commercial monitoring SaaS, and a Zapier rollup. All three produced the same problem: the signal was real, but buried in noise.
+
+> The agent outperforms anyone we tried to hire for this role.
+
+## How we scoped it
+
+A two-week discovery engagement with dispatch leads, finance, and one shadowed shift. We produced a scoped definition of "normal" — the 8 observable signals that, when deviant, required a human.
+
+## What we built
+
+A monitoring agent that runs continuously against the client's TMS, analyses shipment state against the signal map, and escalates only when a human is actually needed — with a one-paragraph written summary of why.
+
+## Measuring impact
+
+Over the 12-week measurement window, the agent caught 100% of the incidents the old system had flagged correctly, plus 14 that the old system had missed. No false positives required more than a single-click dismissal.
+
+## What the team owns now
+
+A system running in the client's cloud, owned by the client. We hand-documented the escalation rules, the signal map, and the retraining workflow. No vendor dependency, no license fees, no mystery.
