@@ -8,7 +8,7 @@ export function AgentDemoSection() {
       <Container>
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
           <div>
-            <EyebrowLine num="№ 03">Inside one run</EyebrowLine>
+            <EyebrowLine>Inside one run</EyebrowLine>
             <h2 className="mt-5 max-w-[18ch] font-serif text-[clamp(32px,4.2vw,52px)] font-medium leading-[1.08] tracking-[-0.022em]">
               Every action, logged. Every{' '}
               <em className="font-normal italic text-accent">tool call, auditable</em>.

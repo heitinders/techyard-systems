@@ -59,7 +59,7 @@ export function LiveTasksStrip() {
     <section className="py-16 md:py-24">
       <Container>
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
-          <EyebrowLine num="№ 02">Recent outputs · one agent, eight systems</EyebrowLine>
+          <EyebrowLine>Recent outputs · one agent, eight systems</EyebrowLine>
           <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-subtle">
             fig. 2 · live feed
           </div>

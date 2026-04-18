@@ -12,7 +12,7 @@ export function HeroHome() {
       <Container>
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
           <div>
-            <EyebrowLine num="№ 01">{hero.eyebrow}</EyebrowLine>
+            <EyebrowLine>{hero.eyebrow}</EyebrowLine>
             <h1 className="mt-7 max-w-[14ch] font-serif text-[clamp(54px,10vw,112px)] font-medium leading-[0.95] tracking-[-0.028em]">
               {hero.title}
               <em className="font-normal italic text-accent">{hero.titleAccent}</em>
