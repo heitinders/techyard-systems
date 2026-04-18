@@ -15,6 +15,10 @@
   --radius-md: var(--r-md);
   --radius-lg: var(--r-lg);
   --radius-pill: var(--r-pill);
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
 @layer base {
