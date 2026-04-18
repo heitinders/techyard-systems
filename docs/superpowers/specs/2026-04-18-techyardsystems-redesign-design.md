@@ -1,10 +1,17 @@
+<!-- markdownlint-disable MD034 MD040 MD060 MD032 -->
 # Techyard Systems — Website Redesign Design Spec
 
 **Date:** 2026-04-18
-**Status:** Draft — pending spec review
+**Status:** Draft v2 — applied stakeholder review revisions (11 fixes + 4 opinionated calls resolved)
 **Project directory:** `/Users/heitindersingh/techyardsystems-redesign/`
-**Current site under replacement:** https://techyardsystems.com
+**Current site under replacement:** <https://techyardsystems.com>
 **Author:** Heitinder Singh (client-engaged redesign)
+
+**Revision log:**
+
+- **v1 (2026-04-18 13:45)** — initial spec after brainstorming. Reviewed by spec-document-reviewer subagent: Approved with 8 advisories.
+- **v1.1 (2026-04-18 14:10)** — applied reviewer advisories: corrected radius count, documented ghost button + chip states, resolved server-action vs route-handler ambiguity, corrected JSON-LD types (no `CaseStudy` type), explicit outcomes-tuple rule, drop-cap a11y note, V1 build vs V1 launch sequencing.
+- **v2 (2026-04-18 15:00)** — applied stakeholder review: dropped ISR (vestigial with MDX-in-repo); fixed DNS TTL timing (48h pre-cut, not same-day); completed env var list; removed orphan `api/contact/route.ts`; added font loading strategy; added security headers + `SECURITY.md` + `/.well-known/security.txt`; Calendly lazy-load-on-click (fixes cookie-banner contradiction); image strategy and `<Figure>` component; contact form delivery-failure UX branch; preview-deploy noindex + password protection; CI-enforced brand-name lint; OG-route Playwright test; outcomes rule relaxed to `3 or 1` discriminated union; journal cadence gate in pre-launch checklist; webhook/server-action limitation flagged in §12; 404 + error page designs; sitemap `priority`/`changefreq` for Bing; chip ARIA pattern; cross-browser drop-cap visual regression.
 
 ---
 
@@ -28,9 +35,11 @@ The current site is generic B2B SaaS in appearance: blue gradients, icon grids, 
 4. **WCAG 2.2 AA conformance** — verified via axe + manual VoiceOver walkthrough before launch.
 5. **Zero-friction content updates** — adding a case study or journal post requires only committing one MDX file; no schema migration, no rebuild required beyond ISR.
 
-### Brand naming (hard rule)
+### Brand naming (hard rule, CI-enforced)
 
 The brand is **Techyard Systems**, never "Techyard" alone. Every production surface — navigation, footer, page titles, OpenGraph tags, schema.org markup, wordmark, meta descriptions — must use the full name. "Techyard" is acceptable only in internal notes and is explicitly disallowed in shipped code and copy.
+
+**Enforcement:** a CI step runs `rg '\bTechyard\b(?!\s+Systems)' --glob '!docs/**' --glob '!*.md' --glob '!**/node_modules/**' app/ components/ content/ public/ lib/` and fails the build on any match. Adding a genuine exception (a class name, for example) requires an inline `# allow-techyard-short` comment that the matcher ignores. The check runs on every PR — no human has to remember.
 
 ---
 
@@ -99,16 +108,16 @@ techyardsystems.com/
 ├── /services ................... Services ................... SSG
 ├── /about ...................... About ...................... SSG
 ├── /contact .................... Contact .................... SSG + client island for form
-├── /work ....................... Case Studies index ......... SSG (ISR on content change)
-│   └── /work/[slug] ............ Case Study detail .......... SSG + ISR
-├── /journal .................... Blog/Journal index ......... SSG + ISR
-│   └── /journal/[slug] ......... Journal post ............... SSG + ISR
+├── /work ....................... Case Studies index ......... SSG
+│   └── /work/[slug] ............ Case Study detail .......... SSG
+├── /journal .................... Journal index .............. SSG
+│   └── /journal/[slug] ......... Journal post ............... SSG
 ├── /security ................... Security & Compliance ...... SSG
 ├── /privacy .................... Privacy Policy ............. SSG (MDX)
 └── /terms ...................... Terms of Service ........... SSG (MDX)
 
-API:
-├── /api/contact ................ POST, Resend-backed ........ Dynamic
+Server actions + API:
+├── app/contact/actions.ts ...... Contact form server action
 └── /api/og/[...slug] ........... OG image generation ........ Dynamic (edge)
 
 SEO assets:
@@ -129,9 +138,9 @@ Five elements: `Work · Services · Journal · About · [Book a call]` CTA. One 
 
 ### Rendering strategy
 
-- **SSG at build** for all static pages.
-- **ISR (`revalidate: 3600`)** for case study and journal routes so MDX commits propagate within ~2 minutes without full redeploy.
-- **Dynamic** only for `/api/contact` (POST handler) and `/api/og/[...slug]` (edge image generation).
+- **Fully static (SSG)** for every page including `/work/[slug]` and `/journal/[slug]`. Since MDX lives in the repo, every content commit triggers a Vercel deploy with a full rebuild — there's no second path by which content could change, so ISR has no work to do and we don't use it. Adding `revalidate: 3600` without a mechanism to change content out-of-band would be theatre; we cut the theatre.
+- **Dynamic** only for `/api/og/[...slug]` (edge image generation) and the contact form server action.
+- **Future migration to ISR** is trivial if V2 introduces an out-of-band editor (CMS, admin UI). Until then, `pnpm build` is the revalidation mechanism.
 
 ---
 
@@ -185,6 +194,20 @@ Two families, both free Google Fonts, loaded via `next/font/google`:
 | Eyebrow | Space Grotesk 500 | 11px | 1.4 | 2px uppercase |
 
 **Reading measure:** 66ch max for sans body, 680px column for journal posts.
+
+### 4.2.1 Font loading strategy (load-bearing for LCP budget)
+
+The hero headline is the LCP element on the home page, rendered in Newsreader at 56–96px. Naïve `next/font/google` usage will blow the < 2.0s LCP budget on mobile 4G. All of the following are required:
+
+- **Subset to Latin only** (`subsets: ['latin']`). Newsreader's full character set is large; Latin alone drops the file by roughly 70%.
+- **Variable font, axis-restricted.** Import the variable `opsz` variant, `weight: '400 600'` range only (we use 400 italic, 500, and 600 — no need for 300 or 700). `next/font/google` supports axis restriction via `weight` ranges and `axes` options.
+- **`display: 'swap'`** so text never goes invisible during the font fetch (FOIT). Accept brief FOUT; mitigate with fallback metric override below.
+- **Fallback metric adjustment** via `adjustFontFallback: true` (the default for Google fonts in next/font) — Next.js generates a size-adjusted system-font fallback so FOUT doesn't shift layout. Verify the computed `size-adjust` in DevTools before launch.
+- **Preload the Newsreader display weight** — `next/font/google` preloads by default when the font is used in the root layout; confirm the `<link rel="preload" as="font" crossorigin>` appears in page HTML.
+- **Space Grotesk and JetBrains Mono** use `display: 'swap'` but are NOT preloaded (not on the LCP path).
+- **Self-hosted via next/font** — no runtime fetch from `fonts.googleapis.com`. Next.js downloads the file at build, stores in `.next/static/media/`, serves same-origin.
+
+Baseline to verify post-implementation: **home page LCP < 1.8s on Moto G Power / Slow 4G** in Lighthouse. If it regresses above 2.0s, the first suspect is this subsection not being followed.
 
 ### 4.3 Spacing scale
 
@@ -260,11 +283,34 @@ Layout:
 
 1. Nav + breadcrumb (Work / Industry / Title)
 2. **Hero** — asymmetric: left = eyebrow + display title + italic lede; right = sidebar meta panel (client, industry, engagement weeks, practice, published date)
-3. **Stat band** — dark charcoal, 3 outcomes (value + note), italic accent on units (`%`, `×`, `$`)
-4. **Body** — 2-column: left = sticky table of contents (66ch article measure); right = MDX prose with H2 anchors, pull quotes, figures with captions
+3. **Stat band** — dark charcoal, renders in one of two layouts based on `outcomes` length (see §6.1):
+   - **3-outcome layout** — three equal columns, each with eyebrow + value (italic unit accent) + note.
+   - **1-outcome layout ("hero stat")** — single centered column; value renders at `clamp(88px, 14vw, 160px)`, note expands to 44ch for a substantive context paragraph.
+4. **Body** — 2-column: left = sticky table of contents (66ch article measure); right = MDX prose with H2 anchors, pull quotes, figures with captions (see §5.2.1)
 5. **Next case study** — Flax band with auto-linked "№ N next" or manual `nextSlug` override
 
 Placeholder-friendly: if `clientDisclosed: false`, render "Tier-1 [industry] (disclosed on request)".
+
+### 5.2.1 Image strategy for case studies and journal posts
+
+Authors place assets at `content/case-studies/<slug>/` or `content/journal/<slug>/` (co-located with the MDX). Velite copies them into the public assets pipeline at build. The schema's `Image` type is:
+
+```typescript
+type Image = {
+  src: string       // path relative to the MDX file, e.g. "./diagram-01.png"
+  alt: string       // required — no empty alt allowed for content images
+  width: number     // intrinsic pixel width, measured at build
+  height: number    // intrinsic pixel height, measured at build
+  caption?: string  // optional figure caption
+}
+```
+
+Velite runs an `asset()` loader that reads the image, measures dimensions, emits an optimized copy to `.velite/static/`, and rewrites `src` to the public URL. The MDX `<Figure>` component accepts an `Image` object and renders `next/image` with `sizes` appropriate to the 66ch content column (case studies) or 680px column (journal), producing AVIF + WebP variants automatically.
+
+Rules:
+- All content images pass through `<Figure>` — raw `<img>` in MDX is disallowed (lint rule).
+- Alt text is required at schema level (zod refine). Decorative-only images don't belong in content MDX; they live in `public/` and get `alt=""` inline.
+- Feature image on journal posts uses the same `Image` type as inline figures.
 
 ### 5.3 Journal post (`/journal/[slug]`)
 
@@ -289,12 +335,68 @@ Editorial split: left = narrative paragraph and lede; right = values grid (4 car
 ### 5.6 Contact (`/contact`)
 
 Two-column:
-- **Left (primary):** form — name, email, company, practice-interest chips (multi-select), message textarea, submit button. Form posts to `/api/contact`. Honeypot field hidden. Success state replaces form with thank-you message.
-- **Right (sidebar):** Calendly embed card (Flax bg), direct contact info (email, response time, based-in).
+
+- **Left (primary):** form — name, email, company, practice-interest chips (multi-select), message textarea, submit button. Form submits via the `submitContactForm` server action (see §7.3). Honeypot field hidden. Success state replaces form with thank-you message. Error state (delivery failure) falls back to "Something went wrong — write to contactus@techyardsystems.com instead" with the address clickable.
+- **Right (sidebar):** Calendly card (Flax bg) using the **lazy-load-on-click** pattern — see "Calendly & cookies" below. Direct contact info (email, response time, based-in).
+
+**Chips ARIA pattern (custom, Radix has no primitive for this):**
+
+The practice-interest chips are a multi-select input. Implemented as:
+
+```jsx
+<fieldset>
+  <legend>Which practice are you curious about?</legend>
+  <div role="group" aria-labelledby="practice-legend">
+    {options.map(opt => (
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={selected.includes(opt.id)}
+        onClick={() => toggle(opt.id)}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+</fieldset>
+```
+
+Each chip is a `role="checkbox"` button with `aria-checked` state, inside a `role="group"` with a `<legend>`-associated label. Screen readers announce "checkbox, checked" / "checkbox, not checked" per chip, matching user mental model. Space/Enter toggles. Tab moves through chips (one stop each — they're independent checkboxes, not a radiogroup).
+
+**Calendly &amp; cookies.**
+
+Calendly's embed iframe sets third-party cookies on page load, which would invalidate the "no cookie banner required" claim in §2. V1 handles this with lazy-load-on-click:
+
+1. Sidebar renders a static Flax card with a headline ("Or book directly") and a "Book a 15-min call →" button. No iframe, no script, no cookies.
+2. Click → replace card contents with the Calendly iframe (set via `src` on click, not pre-set). Clicking is explicit consent to load a third-party tool.
+3. Alternative: link out to `calendly.com/...` in a new tab — simpler, zero cookie concern, slightly worse UX. Keep this as a fallback if lazy-load reveals UX friction.
+
+Document the click-to-load behavior on the page itself so users understand why they're clicking twice.
 
 ### 5.7 Security (`/security`)
 
 Hero + 4 category chips (Data handling · Compliance · Model ownership · Access & auth) + FAQ accordion (Radix `Accordion`) + compliance badges grid at bottom (SOC 2, GDPR, HIPAA-ready, ISO 27001). FAQ content is MDX-backed so updates don't require code changes.
+
+### 5.8 404 and error pages (`not-found.tsx`, `error.tsx`)
+
+Editorial sites lose credibility with default frameworks' "404 Page not found" — the voice break is jarring. Both error surfaces stay in-voice:
+
+**404** — same nav + footer shell, centered content:
+
+- Eyebrow: `Error 404 · Page not found`
+- Display headline (Newsreader): `This page isn't one of <em>ours.</em>`
+- Italic lede: "It might have moved, or you might have a bad link. Here's what we do have:"
+- Three primary links below: `→ Services` · `→ Recent work` · `→ Journal`
+- Small text at bottom: "If you got here from one of our emails or documents, please let us know: contactus@techyardsystems.com"
+
+**500 / unexpected error** — same shell:
+
+- Eyebrow: `Error · Something broke`
+- Display headline: `We're on it.`
+- Italic lede: "Please try again in a minute. If it keeps happening, a two-line email to contactus@techyardsystems.com helps us find the cause."
+- Single primary CTA: `Reload this page` (calls Next.js `reset()`)
+
+Both error pages are statically rendered — no dynamic data, no external requests, must work when most of the app is broken.
 
 ---
 
@@ -320,7 +422,7 @@ File: `content/case-studies/*.mdx`
   lede: string                  // 1-2 sentence italic summary
   pullQuote: string | null      // optional — for homepage featured
   pullAttribution: string | null
-  outcomes: [Outcome, Outcome, Outcome]   // exactly 3 — enforced
+  outcomes: [Outcome, Outcome, Outcome] | [Outcome]  // see "outcome shape" below
   featured: boolean             // appears on homepage
   nextSlug: string | null       // manual "next" override
   body: MDX                     // long-form with H2 anchors
@@ -334,7 +436,16 @@ type Outcome = {
 }
 ```
 
-**Content-authoring rule: exactly 3 outcomes per case study, no more, no less.** The dark stat band is designed around a 3-column layout; 1–2 outcomes leaves dead space and 4+ breaks the grid. This is enforced at the schema level (`[Outcome, Outcome, Outcome]` tuple) — velite will fail the build if violated. If a real engagement produces only 1 strong metric, pad with related supporting metrics (e.g., "1 outcome + 2 context measurements") or rewrite the case study around a different angle. Do not weaken the schema.
+**Outcome shape — exactly 3, or exactly 1.**
+
+The dark stat band renders in one of two layouts, chosen by `outcomes.length`:
+
+- **3 outcomes** → three-column grid (the layout shown in §3 wireframes). Each column: eyebrow + value with italic unit + 1-sentence note.
+- **1 outcome** → single centered "hero stat" — value at `clamp(88px, 14vw, 160px)`, note expands to a 44ch paragraph of genuine context. Reserved for engagements where one metric is so decisive that padding to three would weaken the story.
+
+**2 or 4+ outcomes are invalid** and fail the build. The schema enforces this with a zod discriminated union: `z.tuple([Outcome, Outcome, Outcome]).or(z.tuple([Outcome]))`. An attempt to ship two outcomes fails velite validation with a clear error message pointing to the MDX file.
+
+Why not allow arbitrary lengths? The stat band is the signal-carrying element of the page. Bad layouts tank signal. Two options — "three strong metrics in a row" or "one metric so strong it stands alone" — cover every real engagement we've seen without enabling the "four weak stats in a 2×2 grid" failure mode that this constraint exists to prevent.
 
 ### 6.2 Journal post schema
 
@@ -423,7 +534,7 @@ techyardsystems-redesign/
 │   ├── terms/page.tsx                   → /terms (MDX)
 │   ├── contact/actions.ts               server action for form submit (see §7.3)
 │   ├── api/
-│   │   └── og/[...slug]/route.tsx       (contact route.ts intentionally NOT created in V1)
+│   │   └── og/[...slug]/route.tsx       OG image generation (edge runtime)
 │   ├── sitemap.ts
 │   ├── robots.ts
 │   ├── not-found.tsx
@@ -501,13 +612,22 @@ The form uses a single submission path — React 19 server action — not a para
 2. Submit fires `useActionState(submitContactForm, initialState)`.
 3. `submitContactForm` is a server action (`'use server'`) co-located in `app/contact/actions.ts`. It:
    - Zod-validates the FormData against the contact schema
-   - Returns `{ ok: false, fieldErrors }` on validation failure (React re-renders form with inline errors)
+   - Returns `{ ok: false, kind: 'validation', fieldErrors }` on validation failure (React re-renders form with inline errors)
+   - Honeypot + timing check (if tripped → return `{ ok: true }` silently; do not email, do not tell the bot)
    - Calls Resend directly (no intermediate route handler):
      - Admin email → `CONTACT_TO_EMAIL` (full submission, reply-to = submitter)
-     - Confirmation auto-reply → submitter
+     - Confirmation auto-reply → submitter, `From: RESEND_FROM_EMAIL`
+   - On Resend error (timeout, 5xx, rate-limit): log to stderr (Vercel logs) via a structured logger, and return `{ ok: false, kind: 'delivery' }` to the client
    - Returns `{ ok: true }` on success → form replaces with thank-you state
-4. **Bot mitigation:** honeypot hidden input (`website`) rejected server-side; timing check rejects submits under 1.5s. If abuse materializes post-launch, add Upstash Redis + sliding-window rate-limit (10 submits / IP / hour) — a route-handler wrapper is *not* added just to enable this; we keep the action and gate inside it.
-5. **Note:** we do not use `/api/contact` (route handler) at all. The folder-structure listing above retains `app/api/contact/route.ts` only if future integrations require a non-form caller (e.g., Zapier webhook). For V1, that file is not created.
+
+4. **Error UX branches:**
+   - `kind: 'validation'` → inline errors per field, focus first invalid field.
+   - `kind: 'delivery'` → replace the form with a fallback panel: "Something went wrong on our end — please write to us at **contactus@techyardsystems.com** instead. We read every message." Include a `mailto:` link with the user's message pre-populated as the body so their work isn't lost. Log client-visible error code to Plausible as a custom event so delivery failures are observable.
+   - Network errors (submission never reached the action) → browser's native form error surface + retry suggestion.
+
+5. **Bot mitigation:** honeypot hidden input (`website`) rejected server-side; timing check rejects submits under 1.5s. If abuse materializes post-launch, add Upstash Redis + sliding-window rate-limit (10 submits / IP / hour) gated inside the action — we do not add a route-handler wrapper.
+
+6. **Observability:** server action failures log to Vercel function logs (structured JSON). No Sentry / external error tracker in V1 (YAGNI for a single form on a marketing site). If we ever add one, it goes in `lib/logger.ts` as a single swap. Plausible custom events: `contact_submit_success`, `contact_submit_validation_error`, `contact_submit_delivery_error` — enough signal without being noisy.
 
 **OG image flow.**
 1. Page's `generateMetadata()` sets `openGraph.images: [/api/og/work/[slug]]`.
@@ -517,10 +637,64 @@ The form uses a single submission path — React 19 server action — not a para
 ### 7.4 Build & deploy
 
 - Hosted on **Vercel**.
-- Preview deployments per branch (critical for client approvals during build).
+- Preview deployments per branch (critical for client approvals during build). **Preview deploys are `noindex, nofollow` and password-protected** via Vercel's built-in access control — see §11.1. This prevents fabricated placeholder metrics from being crawled and indexed before real copy lands.
 - Production domain at `techyardsystems.com`.
 - Old site preserved at `old.techyardsystems.com` for 30 days post-launch as rollback insurance.
-- Environment variables: `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `PLAUSIBLE_DOMAIN`, `NEXT_PUBLIC_SITE_URL`.
+
+**Environment variables (complete list):**
+
+| Variable | Scope | Purpose |
+|---|---|---|
+| `RESEND_API_KEY` | Server | Resend API authentication |
+| `RESEND_FROM_EMAIL` | Server | `From:` address on outbound email (e.g., `noreply@techyardsystems.com`) — must be verified in Resend dashboard |
+| `CONTACT_TO_EMAIL` | Server | Destination for admin notifications (`contactus@techyardsystems.com`) |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | Client | Plausible site domain (client-side script needs it) |
+| `NEXT_PUBLIC_SITE_URL` | Client | Canonical site URL for OG/canonical/JSON-LD builders |
+| `NEXT_PUBLIC_CALENDLY_URL` | Client | Calendly scheduling URL (used in the lazy-load iframe src) |
+| `VERCEL_ENV` | Server | Provided by Vercel; used to gate noindex on preview deploys |
+
+All `NEXT_PUBLIC_*` values are baked into the client bundle at build. `.env.example` committed to repo documents the variables without values.
+
+### 7.5 Security headers
+
+Configured in `next.config.ts` via `headers()`:
+
+```typescript
+const securityHeaders = [
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+  { key: 'Content-Security-Policy', value: csp },
+];
+```
+
+**CSP (Content-Security-Policy):**
+
+```
+default-src 'self';
+script-src 'self' 'nonce-{{random}}' plausible.io;
+style-src 'self' 'unsafe-inline';  // required for next/font generated CSS
+img-src 'self' data: blob:;
+font-src 'self';
+connect-src 'self' plausible.io;
+frame-src calendly.com *.calendly.com;  // only when user clicks to load
+form-action 'self';
+base-uri 'self';
+frame-ancestors 'none';
+```
+
+`'unsafe-inline'` on `style-src` is a pragmatic concession to Next.js + next/font generated styles; we can tighten to nonce-based later if CSP reporting shows it's safe. `frame-src` is scoped to Calendly — any other third-party iframe requires an explicit CSP amendment (good: forces a decision, not an accident).
+
+A reporting endpoint (`report-uri` / `report-to`) is not configured in V1 — revisit if we want to instrument CSP violations later.
+
+**`/security.txt` and `SECURITY.md`:**
+
+- `public/.well-known/security.txt` at the well-known path per RFC 9116, with `Contact:` and `Expires:` fields.
+- `SECURITY.md` at repo root with responsible-disclosure policy. Links from `/security` page.
+
+A site called `/security` selling to enterprises without either of these is a visible credibility gap. Both are trivial additions in V1.
 
 ---
 
@@ -550,7 +724,7 @@ Injected per page type via helper functions in `lib/seo.ts`:
 
 ### 8.4 Sitemap + robots + llms.txt
 
-- `app/sitemap.ts` — generates from all static routes + all MDX slugs.
+- `app/sitemap.ts` — generates from all static routes + all MDX slugs. Each entry has `lastModified`, `changeFrequency`, and `priority`. Google ignores `priority`/`changefreq` but Bing still honors them; since we submit to both (§11.2), populating them is effectively free upside. Rough assignments: `/` = 1.0 / weekly, `/work/*` = 0.8 / monthly, `/journal/*` = 0.7 / monthly, legal pages = 0.3 / yearly.
 - `app/robots.ts` — allow all, reference sitemap, no AI-crawler blocks.
 - `public/llms.txt` — canonical summary + pointers to key pages. Signals to ChatGPT web search, Perplexity, Claude web for citation eligibility.
 
@@ -592,25 +766,31 @@ Target: **WCAG 2.2 AA**, verified not assumed.
 
 ### 10.3 End-to-end
 
-- **Playwright**, ~10 flows:
+- **Playwright**, ~13 flows:
   1. Home loads; proof strip values render
   2. Nav links work + sticky nav behaves
-  3. Contact form submits (Resend mocked) and success state renders
+  3. Contact form submits (Resend mocked success) and success state renders
   4. Contact form fails validation with inline errors for missing required fields
-  5. Case study page renders with ToC + stat band
-  6. Journal post renders with drop cap + related posts
-  7. 404 page renders for bad slug
-  8. `prefers-reduced-motion` suppresses entrance motion
-  9. Keyboard-only: full nav path reaches every link + form field + submit
-  10. `sitemap.xml` responds with 200 and valid XML
+  5. Contact form delivery-failure path renders fallback panel (Resend mocked 500) with `mailto:` link populated
+  6. Case study page renders with ToC + stat band in both the 3-outcome and 1-outcome layouts (two fixtures)
+  7. Journal post renders with drop cap + related posts
+  8. 404 page renders for bad slug with in-voice editorial copy (not default framework 404)
+  9. `prefers-reduced-motion` suppresses entrance motion
+  10. Keyboard-only: full nav path reaches every link + form field + submit; chips toggle with Space/Enter
+  11. `sitemap.xml` responds with 200 and valid XML
+  12. `/api/og/work/<first-slug>` responds with 200, `Content-Type: image/png`, and non-empty body
+  13. Calendly card renders as static button; click loads iframe (catches lazy-load regression)
 
 ### 10.4 Visual regression
 
-- **Playwright screenshots** for 4 key pages at mobile (375px) + desktop (1440px):
+- **Playwright screenshots** at mobile (375px) + desktop (1440px):
   - `/` (home, full scroll)
-  - `/work/[slug]` (representative case study)
-  - `/journal/[slug]` (representative journal post)
+  - `/work/[slug]` with 3-outcome layout
+  - `/work/[slug]` with 1-outcome layout
+  - `/journal/[slug]` (drop-cap paragraph in frame)
   - `/contact`
+  - `/not-found` (visit `/nonexistent`)
+- **Cross-browser drop-cap check.** The journal post fixture is screenshotted additionally in Chromium, WebKit, and Firefox at the same viewport. `::first-letter` renders differently across engines — this pair catches engine-specific regressions and confirms the drop cap isn't causing FOUT-driven layout shift once Newsreader loads.
 
 ### 10.5 Performance budgets (CI-enforced)
 
@@ -628,18 +808,26 @@ Target: **WCAG 2.2 AA**, verified not assumed.
 
 ### 11.1 Pre-launch checklist
 
-- [ ] Environment variables set in Vercel production
+- [ ] Environment variables set in Vercel production (full list in §7.4)
 - [ ] Custom domain + SSL configured
 - [ ] Favicons (multi-size) + `apple-touch-icon` + `manifest.json`
 - [ ] `next.config.ts` redirects from legacy paths (`/case-studies/*` → `/work/*`, `/blog/*` → `/journal/*`)
-- [ ] Plausible tracking verified + goals set (contact form submit, Calendly click)
-- [ ] All placeholder copy replaced with client-approved copy
+- [ ] Plausible tracking verified + goals set (`contact_submit_success`, `contact_submit_delivery_error`, Calendly click)
+- [ ] **DNS TTL reduced to 300s at least 48 hours before the DNS cut** — this is the window resolver caches need to drain; same-day reduction doesn't help us
+- [ ] All placeholder copy replaced with client-approved copy (see V1 build vs V1 launch note in §2)
+- [ ] All fabricated case-study metrics replaced with real (or genuinely-representative-and-labeled-as-illustrative) figures
 - [ ] Wordmark finalized (or client-supplied logo wired in)
+- [ ] Journal cadence owner named; first 90-day editorial calendar filled with at least 3 committed future posts — otherwise the journal actively signals the opposite of the practice voice it's meant to project
+- [ ] Preview deploys set to `noindex, nofollow` + Vercel password protection — verified with a `curl` against a preview URL before launch day
+- [ ] Security headers verified with securityheaders.com or Mozilla Observatory (target: A grade)
+- [ ] `SECURITY.md` + `/.well-known/security.txt` present and valid
 - [ ] Final axe audit passing
 - [ ] Final VoiceOver walkthrough recorded/signed off
 - [ ] Production Lighthouse run meeting budgets
 - [ ] `llms.txt` reviewed and matches live content structure
-- [ ] OG images preview correctly on LinkedIn + Twitter + iMessage
+- [ ] OG images preview correctly on LinkedIn + Twitter + iMessage (manual paste-test)
+- [ ] `/api/og/work/<any-slug>` returns 200 in production (Playwright already tests it in CI)
+- [ ] Brand-name lint (§1) passing on the `main` branch with no allow-comments
 
 ### 11.2 Launch
 
@@ -651,10 +839,12 @@ Target: **WCAG 2.2 AA**, verified not assumed.
 
 ### 11.3 Rollback
 
-- If a critical production issue appears (form completely broken, hero failing to render, performance regression > 20%):
-  - DNS cut-back to `old.techyardsystems.com`'s origin takes 5–60 minutes depending on TTL (pre-set TTL to 300s on launch day).
-  - Keep rollback option live for 30 days.
-- Lesser issues (typos, small layout bugs) fix-forward on the new site.
+- **Pre-requisite (T-minus 48h):** DNS TTL on the `techyardsystems.com` A/AAAA records reduced to 300s **at least 48 hours before the cut**. This is not optional and not same-day — resolver caches retain the previous TTL (typically 3600s+) until that cache expires, so a same-day TTL change is ineffective. The 48h window lets existing resolver caches drain.
+- **If a critical production issue appears** (form completely broken, hero failing to render, performance regression > 20%, CSP blocking critical functionality):
+  - DNS cut-back to `old.techyardsystems.com`'s origin takes 5–15 minutes with the pre-reduced TTL in place.
+  - Keep rollback option live for 30 days. After 30 days, `old.techyardsystems.com` is retired.
+- Lesser issues (typos, small layout bugs) fix-forward on the new site via redeploy.
+- **Rollback is an operational last resort, not a routine.** A rollback after a few hours of production traffic loses any form submissions received on the new site unless we explicitly forward them. Practice fix-forward for anything non-critical.
 
 ---
 
@@ -662,13 +852,16 @@ Target: **WCAG 2.2 AA**, verified not assumed.
 
 Not implemented in V1 but explicitly considered:
 
-- Headless CMS migration (Sanity or Payload) — trigger if content team grows beyond dev-led editing
+- Headless CMS migration (Sanity or Payload) — trigger if content team grows beyond dev-led editing. When this happens, also switch `/work/*` and `/journal/*` to ISR with on-demand revalidation (see §3 rendering strategy — we dropped ISR in V1 precisely because it's unnecessary until an out-of-band editor exists).
 - Dark mode — tokens already support; UI toggle is the only missing piece
 - Newsletter signup + email capture
 - Search across `/journal` + `/work` (Pagefind or Algolia)
 - i18n (additional locales if Techyard Systems expands geographically)
 - Blog RSS feed
 - Video case studies embedded in `/work/[slug]`
+- **Inbound webhook endpoint** (`app/api/contact/route.ts`) — V1's server-action-only submission path cannot be called from non-browser contexts. If V2 integrates Zapier, HubSpot, or any inbound webhook that wants to create a contact record, we'll need a parallel `POST /api/contact` route handler with its own auth (Bearer token or HMAC). The server action stays the primary form path; the route handler becomes a non-form caller. Flagging now so it's not a surprise discovery during a V2 integration scoping.
+- CSP reporting endpoint — collect `report-uri` violations to tighten the `style-src 'unsafe-inline'` concession in §7.5
+- Sentry or similar external error tracking — V1 uses Vercel function logs; V2 adds structured error tracking when traffic justifies it.
 
 ---
 
