@@ -1,7 +1,7 @@
 import { Container } from '@/components/primitives/Container'
 import { Button } from '@/components/primitives/Button'
 import { EyebrowLine } from '@/components/primitives/EyebrowLine'
-import { AgentDemo } from '@/components/sections/AgentDemo'
+import { OrchestrationCore } from '@/components/sections/OrchestrationCore'
 import { homeContent } from '@/content/home'
 
 const VOLUME = 'Vol. IV · No. 02'
@@ -39,11 +39,11 @@ export function HeroHome() {
             </div>
           </div>
 
-          <div>
-            <AgentDemo />
-            <div className="mt-3.5 flex justify-between font-mono text-[11px] tracking-[0.08em] text-ink-subtle">
-              <span>fig. 1 · support agent, typical run</span>
-              <span>real agent · recorded 4/02/26</span>
+          <div className="pb-12 lg:pb-0">
+            <OrchestrationCore />
+            <div className="mt-12 flex justify-between font-mono text-[11px] tracking-[0.08em] text-ink-subtle">
+              <span>fig. 1 · orchestration core, live</span>
+              <span>8 integrations · online</span>
             </div>
           </div>
         </div>

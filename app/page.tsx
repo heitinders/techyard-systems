@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { HeroHome } from '@/components/sections/HeroHome'
 import { ProofStrip } from '@/components/sections/ProofStrip'
+import { LiveTasksStrip } from '@/components/sections/LiveTasksStrip'
+import { AgentDemoSection } from '@/components/sections/AgentDemoSection'
 import { PracticesList } from '@/components/sections/PracticesList'
 import { FeaturedCaseStudy } from '@/components/sections/FeaturedCaseStudy'
 import { IndustriesGrid } from '@/components/sections/IndustriesGrid'
@@ -25,6 +27,8 @@ export default function HomePage() {
     <>
       <HeroHome />
       <ProofStrip />
+      <LiveTasksStrip />
+      <AgentDemoSection />
       <PracticesList />
       <FeaturedCaseStudy />
       <IndustriesGrid />

@@ -1,0 +1,187 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { IntegrationIcon, type IntegrationKind } from './IntegrationIcon'
+
+type Node = {
+  id: IntegrationKind
+  label: string
+  angle: number // degrees, 0 = right, rotating clockwise
+}
+
+const NODES: Node[] = [
+  { id: 'whatsapp', label: 'WhatsApp', angle: -90 },
+  { id: 'email', label: 'Email', angle: -45 },
+  { id: 'sales', label: 'Sales CRM', angle: 0 },
+  { id: 'gohighlevel', label: 'GoHighLevel', angle: 45 },
+  { id: 'slack', label: 'Slack', angle: 90 },
+  { id: 'calendar', label: 'Calendar', angle: 135 },
+  { id: 'erp', label: 'ERP', angle: 180 },
+  { id: 'quickbooks', label: 'QuickBooks', angle: 225 },
+]
+
+const RADIUS = 175
+const CORE = 150
+const SIZE = RADIUS * 2 + CORE // total SVG/container square size
+
+export function OrchestrationCore() {
+  const [tick, setTick] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    if (paused) return
+    const id = setInterval(() => setTick((t) => t + 1), 1800)
+    return () => clearInterval(id)
+  }, [paused])
+
+  const activeId = NODES[tick % NODES.length]!.id
+
+  const positioned = useMemo(() => {
+    return NODES.map((n) => {
+      const a = (n.angle * Math.PI) / 180
+      return {
+        ...n,
+        cx: SIZE / 2 + RADIUS * Math.cos(a),
+        cy: SIZE / 2 + RADIUS * Math.sin(a),
+      }
+    })
+  }, [])
+
+  return (
+    <div
+      aria-label="Integration orchestration core, live view"
+      className="relative mx-auto aspect-square w-full max-w-[500px]"
+    >
+      <svg
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <defs>
+          <radialGradient id="tys-core-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.18" />
+            <stop offset="60%" stopColor="var(--color-accent)" stopOpacity="0.04" />
+            <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS + 34} fill="url(#tys-core-glow)" />
+
+        {[RADIUS - 26, RADIUS, RADIUS + 28].map((r, i) => (
+          <circle
+            key={r}
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={r}
+            fill="none"
+            stroke="var(--color-rule)"
+            strokeWidth={i === 1 ? 1 : 0.7}
+            strokeDasharray={i === 1 ? undefined : '2 5'}
+            opacity={0.85 - i * 0.15}
+          />
+        ))}
+
+        {Array.from({ length: 24 }, (_, k) => {
+          const a = (k * 15 * Math.PI) / 180 - Math.PI / 2
+          const r1 = RADIUS - 28
+          const r2 = RADIUS - 24
+          return (
+            <line
+              key={k}
+              x1={SIZE / 2 + r1 * Math.cos(a)}
+              y1={SIZE / 2 + r1 * Math.sin(a)}
+              x2={SIZE / 2 + r2 * Math.cos(a)}
+              y2={SIZE / 2 + r2 * Math.sin(a)}
+              stroke="var(--color-rule)"
+              strokeWidth="0.8"
+            />
+          )
+        })}
+
+        {positioned.map((n) => {
+          const isActive = n.id === activeId
+          return (
+            <g key={n.id}>
+              <line
+                x1={SIZE / 2}
+                y1={SIZE / 2}
+                x2={n.cx}
+                y2={n.cy}
+                stroke={isActive ? 'var(--color-accent)' : 'var(--color-rule)'}
+                strokeWidth={isActive ? 1.4 : 0.8}
+                opacity={isActive ? 0.9 : 0.55}
+              />
+              {isActive ? (
+                <circle r="3.5" fill="var(--color-accent)">
+                  <animateMotion
+                    dur="1.4s"
+                    repeatCount="1"
+                    path={`M ${SIZE / 2} ${SIZE / 2} L ${n.cx} ${n.cy}`}
+                  />
+                  <animate attributeName="opacity" from="1" to="0" dur="1.4s" repeatCount="1" />
+                </circle>
+              ) : null}
+            </g>
+          )
+        })}
+      </svg>
+
+      {/* Core puck */}
+      <div
+        className="absolute left-1/2 top-1/2 z-[2] flex h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-ink text-paper"
+        style={{
+          boxShadow:
+            '0 16px 40px -16px rgba(26,29,24,0.35), 0 0 0 6px color-mix(in oklab, var(--color-paper) 60%, transparent)',
+        }}
+      >
+        <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-paper/55">
+          Techyard AI
+        </div>
+        <div className="mt-1.5 font-serif text-[22px] italic leading-none tracking-[-0.02em]">
+          orchestration
+        </div>
+        <div className="mt-0.5 font-serif text-[22px] italic leading-none tracking-[-0.02em]">
+          core
+        </div>
+        <div className="mt-2.5 h-px w-7 bg-paper/35" />
+        <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[#a8c0b4]">
+          <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-[#a8c0b4]" />
+          online · {NODES.length} systems
+        </div>
+      </div>
+
+      {/* Labeled perimeter nodes */}
+      {positioned.map((n) => {
+        const isActive = n.id === activeId
+        const left = (n.cx / SIZE) * 100
+        const top = (n.cy / SIZE) * 100
+        return (
+          <div
+            key={n.id}
+            className={`absolute z-${isActive ? '[3]' : '[1]'} -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border bg-paper-raised px-3 py-1.5 pl-1.5 transition-[box-shadow,border-color,transform] duration-[var(--dur-fast)] ${
+              isActive
+                ? 'border-accent shadow-[0_10px_28px_-10px_rgba(74,97,82,0.5),0_0_0_4px_color-mix(in_oklab,var(--color-accent)_12%,transparent)]'
+                : 'border-rule shadow-[0_6px_14px_-10px_rgba(26,29,24,0.2)]'
+            }`}
+            style={{ left: `${left}%`, top: `${top}%` }}
+          >
+            <span className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-rule bg-paper">
+                <IntegrationIcon kind={n.id} />
+              </span>
+              <span className="pr-1 font-sans text-[12px] font-medium text-ink">{n.label}</span>
+            </span>
+          </div>
+        )
+      })}
+
+      <button
+        type="button"
+        onClick={() => setPaused((p) => !p)}
+        className="absolute -bottom-10 left-1/2 -translate-x-1/2 rounded-full border border-rule bg-paper-raised px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:border-ink hover:text-ink"
+      >
+        {paused ? 'play' : 'pause'}
+      </button>
+    </div>
+  )
+}
