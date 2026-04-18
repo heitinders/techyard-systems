@@ -47,6 +47,7 @@ next-env.d.ts
 
 # velite (content collections)
 .velite
+public/static
 
 # superpowers working files
 .superpowers
