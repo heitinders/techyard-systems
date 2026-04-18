@@ -45,14 +45,34 @@ export function Footer() {
           <div className="mb-5 text-[11px] uppercase tracking-[2px] text-paper/40">
             Get in touch
           </div>
-          <ul className="flex flex-col gap-3 text-sm text-paper/85">
+          <ul className="flex flex-col gap-3.5 text-sm leading-[1.5] text-paper/85">
+            <li>
+              <a href="tel:+16614880808" className="hover:underline">
+                +1 (661) 488-0808
+              </a>
+            </li>
             <li>
               <a href="mailto:contactus@techyardsystems.com" className="hover:underline">
                 contactus@techyardsystems.com
               </a>
             </li>
             <li>
-              <Link href="/contact" className="hover:underline">
+              <a
+                href="https://maps.google.com/?q=28470+Avenue+Stanford+%23345,+Valencia,+CA+91355"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="not-italic text-paper/75 transition-colors hover:text-paper"
+              >
+                <address className="not-italic">
+                  28470 Avenue Stanford #345
+                  <br />
+                  Valencia, CA 91355 · USA
+                </address>
+              </a>
+            </li>
+            <li className="text-paper/55">Mon–Fri · 9 am – 6 pm PST</li>
+            <li className="pt-1">
+              <Link href="/contact" className="font-medium hover:underline">
                 Book a 15-min call →
               </Link>
             </li>
