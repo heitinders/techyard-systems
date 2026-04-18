@@ -98,3 +98,41 @@ export const homeContent = {
     button: { label: 'Book a call →', href: '/contact' },
   },
 } as const
+
+export const serviceMeta: Record<Practice, {
+  timeline: string
+  bestFit: string
+  measurableBy: string
+  integrations: string[]
+}> = {
+  support: {
+    timeline: '8–10 weeks',
+    bestFit: '>500 tickets/day',
+    measurableBy: 'Deflection, CSAT',
+    integrations: ['Zendesk', 'Intercom', 'Freshdesk', 'Custom'],
+  },
+  sales: {
+    timeline: '6–8 weeks',
+    bestFit: 'SDR team of 5+',
+    measurableBy: 'MQL→SQL rate',
+    integrations: ['HubSpot', 'Salesforce', 'Pipedrive'],
+  },
+  'it-hr': {
+    timeline: '10–12 weeks',
+    bestFit: '>500 headcount',
+    measurableBy: 'Ticket time-to-close',
+    integrations: ['Okta', 'Jira', 'ServiceNow', 'GWS'],
+  },
+  data: {
+    timeline: '4–6 weeks',
+    bestFit: 'Data in warehouse',
+    measurableBy: 'Cycle-to-insight',
+    integrations: ['Snowflake', 'BigQuery', 'Slack'],
+  },
+  ops: {
+    timeline: '8–10 weeks',
+    bestFit: 'Continuous pipelines',
+    measurableBy: 'Incident detection',
+    integrations: ['TMS', 'ERP', 'Slack', 'Custom'],
+  },
+}
