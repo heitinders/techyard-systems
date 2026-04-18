@@ -200,7 +200,8 @@ export function OrchestrationCore() {
       <button
         type="button"
         onClick={() => setPaused((p) => !p)}
-        className="absolute -bottom-10 left-1/2 -translate-x-1/2 rounded-full border border-rule bg-paper-raised px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:border-ink hover:text-ink"
+        aria-label={paused ? 'Play orchestration animation' : 'Pause orchestration animation'}
+        className="absolute -bottom-12 left-1/2 min-h-[32px] min-w-[64px] -translate-x-1/2 rounded-full border border-rule bg-paper-raised px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:border-ink hover:text-ink"
       >
         {paused ? 'play' : 'pause'}
       </button>

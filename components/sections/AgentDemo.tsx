@@ -107,7 +107,8 @@ export function AgentDemo() {
         <button
           type="button"
           onClick={() => setPaused((p) => !p)}
-          className="rounded-full border border-rule bg-transparent px-2.5 py-[3px] font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:border-ink hover:text-ink"
+          aria-label={paused ? 'Play agent demo' : 'Pause agent demo'}
+          className="min-h-[28px] rounded-full border border-rule bg-transparent px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted transition-colors hover:border-ink hover:text-ink"
         >
           {paused ? 'play' : 'pause'}
         </button>
