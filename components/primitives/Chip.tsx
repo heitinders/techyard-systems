@@ -25,8 +25,8 @@ export function Chip({ selected, onToggle, children }: Props) {
       onKeyDown={onKey}
       className={
         selected
-          ? 'rounded-pill border border-accent bg-accent px-4 py-2 text-sm font-medium text-paper transition-colors'
-          : 'rounded-pill border border-rule bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-ink'
+          ? 'inline-flex min-h-[36px] items-center rounded-pill border border-accent bg-accent px-4 py-2 text-sm font-medium text-paper transition-colors'
+          : 'inline-flex min-h-[36px] items-center rounded-pill border border-rule bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-ink'
       }
     >
       {children}

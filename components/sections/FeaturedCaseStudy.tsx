@@ -30,9 +30,9 @@ export function FeaturedCaseStudy() {
             <EyebrowLine num={cs.number} tone="paper">
               Featured · {industryLabels[cs.industry]}
             </EyebrowLine>
-            <h3 className="mt-6 max-w-[24ch] font-serif text-[clamp(30px,3.6vw,44px)] font-medium leading-[1.12] tracking-[-0.02em]">
+            <h2 className="mt-6 max-w-[24ch] font-serif text-[clamp(30px,3.6vw,44px)] font-medium leading-[1.12] tracking-[-0.02em]">
               {cs.title}
-            </h3>
+            </h2>
             <p className="mt-5 max-w-[48ch] font-serif text-[18px] italic leading-[1.55] text-paper/70">
               {cs.lede}
             </p>

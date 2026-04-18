@@ -13,7 +13,7 @@ type ButtonProps = CommonProps & Omit<ComponentProps<'button'>, 'className' | 'c
 type LinkProps = CommonProps & Omit<ComponentProps<typeof Link>, 'className' | 'children'> & { href: string }
 
 const base =
-  'inline-flex items-center justify-center rounded-pill px-6 py-3 text-sm font-medium transition-[transform,background-color,color] duration-[var(--dur-fast)] ease-[var(--ease-out-quart)]'
+  'inline-flex min-h-[44px] items-center justify-center rounded-pill px-6 py-3.5 text-sm font-medium transition-[transform,background-color,color] duration-[var(--dur-fast)] ease-[var(--ease-out-quart)]'
 
 const variants: Record<Variant, string> = {
   primary: 'bg-ink text-paper hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
