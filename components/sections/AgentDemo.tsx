@@ -114,7 +114,10 @@ export function AgentDemo() {
         </button>
       </div>
 
-      <div className="flex min-h-[340px] flex-col gap-2.5 px-[18px] pb-[18px] pt-4">
+      {/* Fixed height + flex-end so messages stack UP from the bottom as the
+          script progresses. Container height never changes → the rest of the
+          page does not reflow when a new message types in or the script loops. */}
+      <div className="flex h-[440px] flex-col justify-end gap-2.5 overflow-hidden px-[18px] pb-[18px] pt-4">
         {visible.map((n, i) => {
           const isLast = i === visible.length - 1
           const key = `${idx}-${i}`
